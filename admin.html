@@ -1574,6 +1574,10 @@ input,select,textarea{font-family:inherit;}
       <div style="background:var(--brand-light,#DCE8E6);border-radius:12px;padding:14px;margin-bottom:14px;">
         <div style="font-size:13px;font-weight:700;color:var(--brand);margin-bottom:10px;">➕ Créer un accès</div>
         <div class="field" style="margin-bottom:8px;">
+          <label>Prénom / Nom affiché</label>
+          <input type="text" id="newUserName" placeholder="Ex: Karim, Sara...">
+        </div>
+        <div class="field" style="margin-bottom:8px;">
           <label>Email</label>
           <input type="email" id="newUserEmail" placeholder="confirmateur@example.com">
         </div>
@@ -9121,11 +9125,13 @@ async function loadUserRoles(){
 }
 
 async function createUser(){
+  const name = document.getElementById('newUserName').value.trim();
   const email = document.getElementById('newUserEmail').value.trim();
   const password = document.getElementById('newUserPassword').value.trim();
   const role = document.getElementById('newUserRole').value;
   const msg = document.getElementById('createUserMsg');
 
+  if(!name){ showUserMsg(msg,'Le prénom/nom est requis','var(--danger)'); return; }
   if(!email || !password){ showUserMsg(msg,'Email et mot de passe requis','var(--danger)'); return; }
   if(password.length < 6){ showUserMsg(msg,'Mot de passe : minimum 6 caractères','var(--danger)'); return; }
 
@@ -9140,9 +9146,25 @@ async function createUser(){
     });
     const json = await res.json();
     if(!res.ok) throw new Error(json.error || 'Erreur');
+
+    // Si rôle confirmateur → insérer aussi dans la table confirmators pour l'assignation
+    if(role === 'confirmateur'){
+      const { error: confErr } = await sb.from('confirmators').insert({
+        name: name,
+        email: email,
+        active: true,
+        created_at: new Date().toISOString()
+      });
+      if(confErr) console.warn('confirmators insert:', confErr.message);
+    }
+
     showUserMsg(msg, '✅ Utilisateur créé avec succès !', 'var(--brand)');
+    document.getElementById('newUserName').value = '';
     document.getElementById('newUserEmail').value = '';
     document.getElementById('newUserPassword').value = '';
+    await loadConfirmators();
+    renderBulkAssignSelect();
+    renderAbandonedBulkAssignSelect();
     loadUserRoles();
   } catch(e) {
     showUserMsg(msg, '❌ ' + e.message, 'var(--danger)');
