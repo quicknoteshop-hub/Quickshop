@@ -1,5 +1,3 @@
-const { createClient } = require('@supabase/supabase-js');
-
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -16,37 +14,46 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Role invalide' });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceKey) {
-    return res.status(500).json({ error: 'Variables d\'environnement manquantes (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)' });
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    return res.status(500).json({ error: 'Variables env manquantes: SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY requis' });
   }
 
-  const supabase = createClient(supabaseUrl, serviceKey);
+  const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SERVICE_KEY,
+    'Authorization': `Bearer ${SERVICE_KEY}`
+  };
 
-  // 1. Créer le compte Auth
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
+  // 1. Créer le compte Auth via Supabase Admin API
+  const authRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email, password, email_confirm: true })
   });
 
-  if (authError) {
-    return res.status(400).json({ error: authError.message });
+  const authData = await authRes.json();
+
+  if (!authRes.ok) {
+    return res.status(400).json({ error: authData.message || authData.msg || JSON.stringify(authData) });
   }
 
-  const userId = authData.user.id;
+  const userId = authData.id;
 
   // 2. Insérer dans user_roles
-  const { error: roleError } = await supabase
-    .from('user_roles')
-    .insert({ id: userId, role });
+  const roleRes = await fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ id: userId, role })
+  });
 
-  if (roleError) {
-    // Rollback : supprimer le compte Auth créé
-    await supabase.auth.admin.deleteUser(userId);
-    return res.status(500).json({ error: 'Erreur assignation du rôle: ' + roleError.message });
+  if (!roleRes.ok) {
+    const roleErr = await roleRes.text();
+    // Rollback : supprimer le compte Auth
+    await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, { method: 'DELETE', headers });
+    return res.status(500).json({ error: 'Erreur user_roles: ' + roleErr });
   }
 
   return res.status(200).json({ success: true, user: { id: userId, email, role } });
