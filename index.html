@@ -152,22 +152,29 @@
 
   /* Price row */
   .price-row{display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-top:6px;}
-  .price-new{font-size:17px; font-weight:800; color:var(--teal-dark); font-variant-numeric:tabular-nums;}
-  .price-cur{font-size:12px; font-weight:700; color:var(--teal); margin-inline-start:1px;}
+  .price-new{font-size:17px; font-weight:800; color:#27AE60; font-variant-numeric:tabular-nums;}
+  .price-cur{font-size:12px; font-weight:700; color:#27AE60; margin-inline-start:1px;}
   .price-old{font-size:12px; font-weight:600; color:var(--ink-soft); text-decoration:line-through; font-variant-numeric:tabular-nums;}
+
+  /* Features mini-list on card */
+  .card-features{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:3px;}
+  .card-features li{font-size:11.5px; color:var(--ink-soft); padding-inline-start:16px; position:relative; line-height:1.4;}
+  .card-features li::before{content:'✓'; position:absolute; inset-inline-start:0; color:#27AE60; font-weight:800; font-size:12px;}
 
   /* CTA button — always visible */
   .quick-add{
     margin:12px 14px 14px;
-    background:var(--amber); color:#12181A;
-    text-align:center; padding:11px 12px;
+    background:#27AE60; color:#fff;
+    text-align:center; padding:12px 12px;
     border-radius:12px; font-size:13px; font-weight:800;
     transition:background .18s ease, transform .15s ease;
     cursor:pointer; border:none; width:calc(100% - 28px);
     display:flex; align-items:center; justify-content:center; gap:6px;
+    box-shadow:0 4px 14px rgba(39,174,96,.30);
+    letter-spacing:.3px;
   }
-  @media (hover:hover){ .quick-add:hover{background:#c97a2a;} }
-  .quick-add:active{transform:scale(.96); background:#c97a2a;}
+  @media (hover:hover){ .quick-add:hover{background:#219a52;} }
+  .quick-add:active{transform:scale(.96); background:#219a52;}
 
   @media (max-width:640px){
     .product-grid{grid-template-columns:repeat(2,1fr); gap:12px 10px;}
@@ -1140,19 +1147,19 @@ function renderProductGrid(){
   if(!list.length){ grid.innerHTML = `<div class="empty-note">لا توجد منتجات في هذه الفئة بعد</div>`; return; }
   grid.innerHTML = list.map(p=>{
     const img1 = p.images[0]||''; const img2 = p.images[1]||'';
-    const discountPct = (p.priceOld && p.priceOld > p.priceNew)
-      ? Math.round((1 - p.priceNew/p.priceOld)*100) : 0;
     const badgeTag = p.badge ? `<span class="tag sale">${esc(p.badge)}</span>` : '';
-    const discountTag = discountPct >= 5 ? `<span class="tag discount">−${discountPct}%</span>` : '';
+    const feats = (p.features||[]).slice(0,2);
+    const featsHtml = feats.length
+      ? `<ul class="card-features">${feats.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>` : '';
     return `
     <div class="product-card" data-id="${esc(p.id)}">
       <div class="product-media">
         <div class="art">${img1?`<img src="${encodeURI(img1)}" alt="${esc(p.name)}" loading="lazy">`:''}</div>
-        <div class="tag-stack">${badgeTag}${discountTag}</div>
+        <div class="tag-stack">${badgeTag}</div>
       </div>
       <div class="product-info">
         <h3>${esc(p.name)}</h3>
-        <div class="sub">${esc((p.description||'').slice(0,55))}</div>
+        ${featsHtml}
         <div class="price-row">
           <span class="price-new">${fmt(p.priceNew)}</span><span class="price-cur">دج</span>
           ${p.priceOld && p.priceOld > p.priceNew ? `<span class="price-old">${fmt(p.priceOld)} دج</span>` : ''}
