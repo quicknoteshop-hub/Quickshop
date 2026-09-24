@@ -788,7 +788,8 @@ function renderPage(p){
       delivery_type: DELIVERY_TYPE==='bureau'?'stopdesk':DELIVERY_TYPE,
       delivery_price: deliveryPrice,
       total: productTotal+deliveryPrice,
-      status:'new', source:'web',
+      unit_price: SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew),
+      status:'new', order_source:'organic',
       client_ip: CLIENT_IP||null,
       created_at: Date.now()
     };

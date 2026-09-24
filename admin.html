@@ -4966,7 +4966,7 @@ function renderBulkAssignSelect(){
   const sel = document.getElementById('bulkAssignSelect');
   if(!sel) return;
   sel.innerHTML = '<option value="">Assigner à...</option><option value="__none__">🔑 Admin</option>' +
-    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.display_name||c.name}</option>`).join('');
 }
 function isOrderPinned(o){
   return o.status==='postponed' && o.postponedUntil && Number(o.postponedUntil)<=Date.now() && !o.noestTracking;
@@ -5002,7 +5002,7 @@ function orderCardHTML(o){
   const isSelected = selectedOrderIds.has(o.id);
   const duplicateType = duplicatePhoneType(o, ORDERS);
   const confirmatorsOpts = CONFIRMATORS_LIST
-    .map(c=>`<option value="${c.name}" ${c.name===o.assignedTo?'selected':''}>${c.name}</option>`).join('');
+    .map(c=>`<option value="${c.name}" ${c.name===o.assignedTo?'selected':''}>${c.display_name||c.name}</option>`).join('');
   const isBlocked = o.phone && BLOCKED_PHONES_SET && BLOCKED_PHONES_SET.has(o.phone.replace(/\s+/g,''));
 
   return `
@@ -5225,7 +5225,7 @@ async function logActivity(entityType, entityId, action, details, oldValue, newV
       details: details || null,
       old_value: oldValue!=null ? String(oldValue) : null,
       new_value: newValue!=null ? String(newValue) : null,
-      performed_by: 'Admin',
+      performed_by: (await sb.auth.getUser().then(r=>r?.data?.user?.email).catch(()=>null)) || 'Admin',
       created_at: Date.now()
     });
   }catch(e){ console.error('logActivity error:', e); }
@@ -5347,8 +5347,28 @@ const MANUALLY_UNASSIGNED_ABAND_IDS = new Set();
 let _autoAssigning = false;
 
 // Index round-robin persisté dans localStorage (survive au rechargement)
-function getIdx(key){ return parseInt(localStorage.getItem('qs_'+key)||'0',10); }
-function incIdx(key, len){ const next=(getIdx(key)+1)%len; try{localStorage.setItem('qs_'+key,next);}catch(e){} }
+// Round-robin index stored in Supabase app_settings for cross-session consistency
+// Falls back to localStorage if Supabase write fails
+const _rrCache = {};
+async function getIdx(key){
+  try {
+    const { data } = await sb.from('app_settings').select('value').eq('key', 'rr_'+key).single();
+    const v = parseInt(data?.value||'0', 10);
+    _rrCache[key] = v;
+    return v;
+  } catch(_) {
+    return parseInt(localStorage.getItem('qs_'+key)||'0', 10);
+  }
+}
+async function incIdx(key, len){
+  const current = _rrCache[key] ?? parseInt(localStorage.getItem('qs_'+key)||'0', 10);
+  const next = (current + 1) % len;
+  _rrCache[key] = next;
+  try {
+    await sb.from('app_settings').upsert({ key: 'rr_'+key, value: String(next) });
+  } catch(_) {}
+  try { localStorage.setItem('qs_'+key, next); } catch(_) {}
+}
 
 async function autoAssignNewOrders(){
   if(_autoAssigning) return;
@@ -5438,7 +5458,8 @@ async function checkAutoReassign(){
   const now = Date.now();
   const stuck = ORDERS.filter(o=>{
     if(!o.assignedTo||o.status!=='new') return false;
-    return o.assignedAt && (now-Number(o.assignedAt))>delay;
+    const assignedMs = o.assignedAt ? (typeof o.assignedAt==='string' ? new Date(o.assignedAt).getTime() : Number(o.assignedAt)) : 0;
+    return assignedMs && (now-assignedMs)>delay;
   });
   for(const o of stuck){
     const others = active.filter(c=>c.name!==o.assignedTo);
@@ -5667,7 +5688,7 @@ function abandonedCardHTML(c){
   const si = abandonedStatusInfo(c.status);
   const isSelected = selectedAbandonedIds.has(c.id);
   const confirmatorsOpts = CONFIRMATORS_LIST
-    .map(cf=>`<option value="${cf.name}" ${cf.name===c.assignedTo?'selected':''}>${cf.name}</option>`).join('');
+    .map(cf=>`<option value="${cf.name}" ${cf.name===c.assignedTo?'selected':''}>${cf.display_name||cf.name}</option>`).join('');
   return `
   <div class="order-card ${isSelected?'selected':''}" data-aband-id="${c.id}">
     <div class="order-top">
@@ -5749,7 +5770,7 @@ function renderAbandonedBulkAssignSelect(){
   const sel = document.getElementById('bulkAbandonedAssignSelect');
   if(!sel) return;
   sel.innerHTML = '<option value="">Assigner à...</option><option value="__none__">🔑 Admin</option>' +
-    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.display_name||c.name}</option>`).join('');
 }
 
 function renderAbandonedList(){
@@ -6172,7 +6193,7 @@ function openAbandonedModal(id){
   recalcAbandTotal();
   const body = document.getElementById('abandonedModalBody');
   const confirmatorsOpts = CONFIRMATORS_LIST
-    .map(cf=>`<option value="${cf.name}" ${cf.name===c.assignedTo?'selected':''}>${cf.name}</option>`).join('');
+    .map(cf=>`<option value="${cf.name}" ${cf.name===c.assignedTo?'selected':''}>${cf.display_name||cf.name}</option>`).join('');
 
   body.innerHTML = `
     <div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px;font-size:13px;">
@@ -9150,10 +9171,15 @@ async function createUser(){
     // Si rôle confirmateur → insérer aussi dans la table confirmators pour l'assignation
     if(role === 'confirmateur'){
       const { error: confErr } = await sb.from('confirmators').insert({
-        name: name,
+        name: email,   // on utilise l'email comme identifiant unique — même valeur que CURRENT_USER.name dans confirmateur.html
+        display_name: name,
         active: true
       });
-      if(confErr) console.warn('confirmators insert:', confErr.message);
+      if(confErr){
+        // display_name column may not exist yet — fallback to name only
+        const { error: confErr2 } = await sb.from('confirmators').insert({ name: email, active: true });
+        if(confErr2) showUserMsg(document.getElementById('createUserMsg'), '⚠️ Créé mais non ajouté à la liste de conf. Vérifier la table confirmators.', 'var(--warn)');
+      }
     }
 
     showUserMsg(msg, '✅ Utilisateur créé avec succès !', 'var(--brand)');
@@ -9176,6 +9202,20 @@ async function createUser(){
 async function deleteUser(userId){
   if(!confirm('Supprimer cet utilisateur ? Cette action est irréversible.')) return;
   try {
+    // Fetch the user's email from auth before deleting, to also clean up confirmators
+    let userEmail = null;
+    try {
+      const adminRes = await fetch('/api/get-user', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ userId })
+      });
+      if(adminRes.ok){
+        const adminJson = await adminRes.json();
+        userEmail = adminJson.email || null;
+      }
+    } catch(_){}
+
     const res = await fetch('/api/delete-user', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -9183,6 +9223,14 @@ async function deleteUser(userId){
     });
     const json = await res.json();
     if(!res.ok) throw new Error(json.error || 'Erreur');
+
+    // Also remove from confirmators table (match by email = name field)
+    if(userEmail){
+      await sb.from('confirmators').delete().eq('name', userEmail);
+      await loadConfirmators();
+      renderBulkAssignSelect();
+      renderAbandonedBulkAssignSelect();
+    }
     loadUserRoles();
   } catch(e) {
     alert('Erreur : ' + e.message);
@@ -9253,7 +9301,7 @@ function openNewOrderModal(){
   // Assignation : admin par défaut + confirmateurs actifs
   const assignSel = document.getElementById('newOrderAssign');
   assignSel.innerHTML = '<option value="__admin__">🔑 Admin (par défaut)</option>' +
-    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.display_name||c.name}</option>`).join('');
 
   // Reset
   document.getElementById('newOrderName').value = '';
@@ -9847,7 +9895,7 @@ function renderSalaires(){
   const sel = document.getElementById('salConfFilter');
   const prevVal = sel.value;
   sel.innerHTML = '<option value="">Tous</option>' +
-    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.display_name||c.name}</option>`).join('');
   // Restaurer la sélection précédente
   if(prevVal) sel.value = prevVal;
   const confFilter = sel.value; // lire APRÈS restauration
@@ -11349,7 +11397,7 @@ async function renderStatistiques(){
   if(prodSel && prodSel.options.length<=1) fillProductFilterSelect(prodSel);
   const confSel = document.getElementById('statsConfFilter');
   if(confSel && confSel.options.length<=1){
-    confSel.innerHTML = '<option value="">Tous confirmateurs</option>' + CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+    confSel.innerHTML = '<option value="">Tous confirmateurs</option>' + CONFIRMATORS_LIST.map(c=>`<option value="${c.name}">${c.display_name||c.name}</option>`).join('');
   }
   const wilSel = document.getElementById('statsWilayaFilter');
   if(wilSel && wilSel.options.length<=1){
