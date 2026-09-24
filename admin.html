@@ -5320,7 +5320,7 @@ async function assignOrder(id, name, silent=false){
   const o = ORDERS.find(x=>x.id===id);
   const oldAssign = o ? o.assignedTo : null;
   const {error} = await sb.from('orders')
-    .update({assigned_to: assignTo, assigned_at: Date.now()})
+    .update({assigned_to: assignTo, assigned_at: new Date().toISOString()})
     .eq('id', id);
   if(error){ console.error('assignOrder:', error.message); showToast('Erreur DB: '+error.message); return; }
   if(isAdmin) MANUALLY_UNASSIGNED_IDS.add(id);
@@ -5445,7 +5445,7 @@ async function checkAutoReassign(){
     if(!others.length) continue;
     const next = others[Math.floor(Math.random()*others.length)];
     const oldAssignReassign = o.assignedTo;
-    await sb.from('orders').update({assigned_to:next.name, assigned_at:now}).eq('id',o.id);
+    await sb.from('orders').update({assigned_to:next.name, assigned_at:new Date(now).toISOString()}).eq('id',o.id);
     o.assignedTo=next.name; o.assignedAt=now;
     logActivity('order', o.id, 'assigned', 'Réassignation automatique (bloquée trop longtemps)', oldAssignReassign, next.name);
     showToast(`⚡ Réassignée : ${o.name} → ${next.name}`);
@@ -5921,7 +5921,7 @@ async function assignAbandoned(id, name, silent=false){
   const c = ABANDONED_CARTS.find(x=>x.id===id);
   const oldAssign = c ? c.assignedTo : null;
   const {error} = await sb.from('abandoned_carts')
-    .update({assigned_to: assignTo, assigned_at: Date.now()})
+    .update({assigned_to: assignTo, assigned_at: new Date().toISOString()})
     .eq('id', id);
   if(error){ console.error('assignAbandoned:', error.message); showToast('Erreur DB: '+error.message); return; }
   if(isAdmin) MANUALLY_UNASSIGNED_ABAND_IDS.add(id);
@@ -9448,7 +9448,7 @@ document.getElementById('createOrderBtn')?.addEventListener('click', async ()=>{
     order_source: 'manual',
     order_type: orderType,
     assigned_to: assignedTo||null,
-    assigned_at: assignedTo ? Date.now() : null,
+    assigned_at: assignedTo ? new Date().toISOString() : null,
     created_at: Date.now()
   };
 
