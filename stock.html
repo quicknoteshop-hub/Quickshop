@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>QuickShop — Stock</title>
+<link rel="manifest" href="stock-manifest.json">
+<link rel="icon" href="icon-stock-192.png" type="image/png">
+<meta name="theme-color" content="#1F4B4C">
+<link rel="apple-touch-icon" href="icon-stock-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="QuickShop Stock"><link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7FAF9; --card:#FFFFFF; --ink:#1C2230; --muted:#6B7280; --line:#E7EAEF; --line:#E7EAEF;
+  --brand:#1F4B4C; --brand-dark:#163736; --brand-light:#DCE8E6;
+  --accent:#FF8A3D; --accent-light:#FFF1E6;
+  --danger:#E14B4B; --danger-light:#FCEAEA;
+  --warn:#E0A52E; --warn-light:#FBF1DD;
+  --shadow:0 2px 10px rgba(28,34,48,0.06);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{font-family:'Tajawal',sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;}
+h1,h2,h3{font-family:'Tajawal',sans-serif;}
+button{font-family:inherit; cursor:pointer; border:none; background:none;}
+input,select,textarea{font-family:inherit;}
+
+:root{ --nav-h: calc(60px + env(safe-area-inset-bottom)); }
+
+.app-header{background:#fff; padding:14px 16px 12px; position:sticky; top:0; z-index:40; border-bottom:2px solid var(--brand-light); box-shadow:0 2px 12px rgba(31,75,76,.1); display:flex; align-items:center; justify-content:space-between;}
+.app-title{font-family:'Tajawal'; font-weight:800; font-size:18px;}
+.app-title span{color:var(--accent);}
+.app-sub{font-size:11px; color:var(--muted); margin-top:1px; font-weight:600;}
+.agent-pill{background:var(--brand-light); color:var(--brand-dark); font-size:11.5px; font-weight:700; padding:6px 11px; border-radius:999px;}
+.logout-btn{font-size:11px; color:var(--muted); font-weight:700; margin-top:4px;}
+
+.app-content{padding:16px; padding-bottom:calc(16px + var(--nav-h)); max-width:640px; margin:0 auto; box-sizing:border-box; width:100%;}
+.view{display:none; overflow-x:hidden;}
+.view.active{display:block;}
+
+.section-title{font-size:16px; font-weight:700; margin-bottom:4px;}
+.section-sub{font-size:12.5px; color:var(--muted); margin-bottom:14px;}
+.card{background:var(--card); border-radius:14px; box-shadow:var(--shadow); border:1px solid var(--line); padding:14px;}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:12px 16px; border-radius:11px; font-weight:700; font-size:14px;}
+.btn-primary{background:var(--brand); color:#fff;}
+.btn-outline{background:#fff; border:1.5px solid var(--line); color:var(--ink);}
+.btn-block{width:100%;}
+.btn-sm{padding:9px 12px; font-size:12.5px; border-radius:9px;}
+
+.field{margin-bottom:12px;}
+.field label{font-size:12.5px; font-weight:600; color:var(--muted); display:block; margin-bottom:5px;}
+.field input, .field select, .field textarea{width:100%; padding:12px 13px; border-radius:10px; border:1.5px solid var(--line); font-size:15px; background:var(--bg); outline:none;}
+.field textarea{resize:vertical; min-height:64px; font-family:inherit;}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--brand); background:#fff;}
+.mini-zone{display:none; flex-direction:column; gap:8px;}
+.mini-zone.open{display:flex;}
+
+.bottom-nav{position:fixed; left:0; right:0; bottom:0; z-index:50; background:#fff; box-shadow:0 -2px 12px rgba(28,34,48,.08); display:flex; padding:2px 0 calc(2px + env(safe-area-inset-bottom)); border-top:1.5px solid var(--line);}
+.nav-item{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:9px 4px; font-size:10.5px; font-weight:600; color:var(--muted); min-width:0;}
+.nav-item .nav-icon{font-size:20px;}
+.nav-item.active{color:var(--brand-dark);}
+.sidebar-nav{display:none;}
+
+/* ≥900px : sidebar gauche, pas de barre du bas (résout le défilement bloqué) */
+@media(min-width:900px){
+  :root{ --nav-h:0px; }
+  .bottom-nav{display:none !important;}
+  .sidebar-nav{
+    display:flex; flex-direction:column; gap:4px;
+    position:fixed; left:0; top:0; bottom:0; width:210px; z-index:60;
+    background:#fff; border-right:1.5px solid var(--line);
+    padding:90px 12px 20px; overflow-y:auto;
+    box-shadow:2px 0 12px rgba(28,34,48,.06);
+  }
+  .sidebar-nav .nav-item{
+    flex:none; flex-direction:row; gap:10px;
+    padding:11px 14px; border-radius:10px;
+    font-size:13.5px; font-weight:600; color:var(--ink);
+    justify-content:flex-start; width:100%;
+  }
+  .sidebar-nav .nav-item .nav-icon{font-size:19px;}
+  .sidebar-nav .nav-item.active{color:var(--brand-dark); background:var(--brand-light); font-weight:700;}
+  .app-content{margin-left:210px; padding:28px 32px; padding-bottom:28px; max-width:880px;}
+  .app-header{padding-left:226px;}
+}
+
+/* 600-899px : tablette, barre du bas élargie */
+@media(min-width:600px) and (max-width:899px){
+  .app-content{max-width:680px; padding:20px; padding-bottom:calc(20px + var(--nav-h));}
+  .nav-item{font-size:11px; padding:10px 4px;}
+  .nav-item .nav-icon{font-size:21px;}
+}
+
+/* petit mobile */
+@media(max-width:360px){
+  .nav-item{font-size:9px; padding:8px 2px;}
+  .nav-item .nav-icon{font-size:18px;}
+}
+
+.prod-row{display:flex; gap:12px; align-items:center; padding:12px; background:var(--card); border-radius:13px; border:1px solid var(--line); margin-bottom:10px; box-shadow:var(--shadow);}
+.prod-thumb{width:48px; height:48px; border-radius:10px; object-fit:cover; background:var(--bg); flex-shrink:0;}
+.status-pill{font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; display:inline-block;}
+
+.empty-state{text-align:center; padding:50px 20px; color:var(--muted);}
+
+.modal-overlay{position:fixed; inset:0; background:rgba(20,24,32,.5); z-index:100; display:none; align-items:flex-end; justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-sheet{background:#fff; width:100%; max-width:480px; border-radius:20px 20px 0 0; max-height:88vh; overflow-y:auto; padding:18px 18px calc(20px + env(safe-area-inset-bottom)); animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+.modal-handle{width:40px; height:4px; background:var(--line); border-radius:999px; margin:0 auto 14px;}
+.modal-title{font-size:16.5px; font-weight:700; margin-bottom:14px;}
+.modal-close{position:absolute; top:18px; right:18px; font-size:20px; color:var(--muted);}
+.btn-danger{background:var(--danger-light); color:var(--danger);}
+.icon-btn{width:36px; height:36px; border-radius:9px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;}
+.caisse-type-btn.active{background:var(--brand-light); border-color:var(--brand); color:var(--brand-dark); font-weight:800;}
+.caisse-type-btn[data-ctype="sortie"].active{background:var(--danger-light); border-color:var(--danger); color:var(--danger);}
+.empty-state .e-icon{font-size:38px; margin-bottom:10px;}
+
+.import-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+.import-row:last-child{border-bottom:none;}
+.import-row input[type="checkbox"]{width:19px; height:19px; flex-shrink:0;}
+.import-row .imp-mid{flex:1; min-width:0;}
+.import-row .imp-track{font-size:11px; color:var(--muted); font-family:monospace;}
+.import-row .imp-prod{font-size:13px; font-weight:700;}
+.import-summary{font-size:12px; color:var(--muted); margin-top:8px;}
+.import-row-error{flex-direction:column; align-items:stretch; background:var(--danger-light); border-radius:10px; padding:10px; border-bottom:none; margin-bottom:8px;}
+.import-row-error .imp-fix-input{flex:1; padding:9px 11px; border-radius:8px; border:1.5px solid var(--danger); font-size:13px; background:#fff;}
+.imp-manual-toggle{font-size:11.5px; color:var(--brand-dark); font-weight:700; margin-top:8px; text-align:left; padding:4px 0;}
+.imp-manual-zone{display:none; flex-direction:column; gap:8px; margin-top:8px;}
+.imp-manual-zone.open{display:flex;}
+.imp-manual-zone select, .imp-manual-zone input{padding:9px 11px; border-radius:8px; border:1.5px solid var(--line); font-size:13px; background:#fff;}
+.imp-manual-zone select{flex:1;}
+.date-preset-btn{
+  padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;
+  background:var(--bg);border:1.5px solid var(--line);color:var(--muted);
+  cursor:pointer;transition:.15s;
+}
+.date-preset-btn.active,.date-preset-btn:hover{
+  background:var(--brand);border-color:var(--brand);color:#fff;
+}
+
+.toast{position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:11px 18px; border-radius:12px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:.25s; z-index:200; white-space:nowrap;}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+#loginScreen{position:fixed; inset:0; z-index:9999; background:#F7FAF9; display:flex; align-items:center; justify-content:center; padding:24px;}
+.login-card{background:#fff; border-radius:24px; padding:32px 28px; width:100%; max-width:360px; box-shadow:0 20px 60px rgba(0,0,0,.18); text-align:center;}
+.login-logo{font-family:'Tajawal',sans-serif; font-weight:900; font-size:28px; color:#0F8F60; margin-bottom:2px;}
+.login-logo span{color:#FF8A3D;}
+.login-sub{font-size:12px; color:#6B7280; font-weight:500; margin-bottom:26px;}
+.login-field{margin-bottom:14px; text-align:left;}
+.login-field label{font-size:11px; font-weight:700; color:#6B7280; display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px;}
+.login-field select, .login-field input{width:100%; padding:12px 14px; border-radius:12px; border:2px solid #E7EAEF; font-size:14px; outline:none; background:#F7F8FA; box-sizing:border-box;}
+.login-field select:focus, .login-field input:focus{border-color:#1F4B4C; background:#fff;}
+.login-btn-el{width:100%; padding:13px; border-radius:12px; background:#1F4B4C; color:#fff; font-size:15px; font-weight:700; font-family:'Tajawal',sans-serif; border:none; cursor:pointer; margin-top:8px;}
+#loginError{color:#E14B4B; font-size:12px; font-weight:600; margin-top:10px; display:none;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 16px;">
+      <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="64" height="64" rx="16" fill="#1F4B4C"/>
+        <path d="M12 16h5l5.6 20h20.8l4-14H21" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="26" cy="43" r="2.4" fill="#fff"/>
+        <circle cx="40" cy="43" r="2.4" fill="#fff"/>
+        <path d="M36 10l-10 16h8l-4 14 14-18H35z" fill="#E08A3C"/>
+      </svg>
+      <div style="text-align:left;line-height:1.1;">
+        <div style="font-family:'Tajawal',sans-serif;font-size:28px;font-weight:900;color:#1F4B4C;letter-spacing:-0.5px;">Quick<span style="color:#E08A3C;">Shop</span></div>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1F4B4C;margin-bottom:2px;">QuickShop — Gestion</div>
+    <div class="login-sub">Dépôt & Stock — Accès employé</div>
+    <div class="login-field">
+      <label>Agent</label>
+      <select id="loginAgentSelect"><option value="">Chargement...</option></select>
+    </div>
+    <div class="login-field">
+      <label>Mot de passe</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn-el" onclick="doLogin()">🔐 Connexion</button>
+    <div id="loginError">❌ Mot de passe incorrect</div>
+  </div>
+</div>
+
+<header class="app-header">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <svg width="28" height="28" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <defs>
+        <linearGradient id="qsHdrGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1F4B4C"/>
+          <stop offset="100%" stop-color="#163736"/>
+        </linearGradient>
+      </defs>
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="#12181A"/>
+  <!-- Cart body -->
+  <path d="M6 8h2.5l2.8 10h10.4l2-7H10.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Cart wheels -->
+  <circle cx="13" cy="21.5" r="1.2" fill="#fff"/>
+  <circle cx="20" cy="21.5" r="1.2" fill="#fff"/>
+  <!-- Lightning bolt -->
+  <path d="M18 6l-5 8h4l-2 7 7-9h-4.5z" fill="#E08A3C"/>
+</svg>
+<path d="M 34.3 38.4 A 33.2 33.2 0 1 0 87.8 41.6" fill="none" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round"/>
+      <circle cx="82" cy="38" r="7" fill="#D9A950"/>
+      <polygon points="60,42 78,82 66,82 63,74 57,74 54,82 42,82" fill="#FFFFFF"/>
+      <rect x="56" y="66" width="8" height="4" fill="#FFFFFF"/>
+    </svg>
+    <div>
+      <div style="font-family:'Tajawal',sans-serif;font-size:13px;font-weight:700;color:#163736;letter-spacing:.2px;line-height:1.3;">Quick<span style="color:#E08A3C">Shop</span></div>
+      <div class="app-sub" style="margin-top:0;">Dépôt & Stock</div>
+    </div>
+  </div>
+  <div style="text-align:right;">
+    <div class="agent-pill" id="agentPill">—</div>
+    <div class="logout-btn" onclick="doLogout()">Déconnexion</div>
+  </div>
+</header>
+
+<nav class="sidebar-nav" id="sidebarNav">
+  <button class="nav-item active" data-view="stock"><span class="nav-icon">📦</span>Stock</button>
+    <button class="nav-item" data-view="reception"><span class="nav-icon">📥</span>Réception</button>
+ <button class="nav-item" data-view="retour"><span class="nav-icon">📤</span>Retour</button>
+ <button class="nav-item" data-view="ajustement"><span class="nav-icon">🛠️</span>Ajustement</button>
+  <button class="nav-item" data-view="livremanuel"><span class="nav-icon">🏍️</span>Livré local</button>
+  <button class="nav-item" data-view="historique"><span class="nav-icon">🕒</span>Historique</button>
+  <button class="nav-item caisse-nav-item" data-view="caisse" style="display:none;"><span class="nav-icon">💰</span>Caisse</button>
+  <button class="nav-item caisse-nav-item" data-view="fournisseurs" style="display:none;"><span class="nav-icon">🏭</span>Fournisseurs</button>
+</nav>
+
+<div class="app-content">
+
+  <!-- ===== VUE STOCK ===== -->
+  <section class="view active" id="view-stock">
+    <div class="section-title">Stock actuel</div>
+    <div class="section-sub">Mis à jour en temps réel avec l'admin</div>
+    <div id="stockValueKpi" style="display:none;margin-bottom:12px;"></div>
+    <input id="stockSearch" placeholder="🔍 Rechercher un produit..." style="width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--line);font-size:14px;background:var(--card);margin-bottom:12px;">
+    <div id="stockList"><div class="empty-state">Chargement...</div></div>
+  </section>
+
+  <!-- ===== VUE RÉCEPTION ===== -->
+  <section class="view" id="view-reception">
+    <div class="section-title">📥 Nouvelle réception</div>
+    <div class="section-sub">Produits reçus avec bon fournisseur</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Produit</label>
+        <select id="recProductSelect"></select>
+      </div>
+      <div class="field" id="recVariantWrap" style="display:none;">
+        <label>Variante</label>
+        <select id="recVariantSelect"></select>
+      </div>
+      <div class="field">
+        <label>Fournisseur</label>
+        <div style="display:flex;gap:8px;">
+          <select id="recSupplierSelect" style="flex:1;"><option value="">— Aucun —</option></select>
+          <button type="button" class="btn btn-outline btn-sm" id="recAddSupplierToggle" style="flex-shrink:0;">➕ Fournisseur</button>
+        </div>
+        <div id="recNewSupplierZone" class="mini-zone" style="margin-top:8px;">
+          <input type="text" id="recNewSupplierName" placeholder="Nom du fournisseur">
+          <input type="text" id="recNewSupplierPhone" placeholder="Téléphone (optionnel)">
+          <input type="number" id="recNewSupplierSoldeInitial" placeholder="Solde d'ouverture (دج) — si dette déjà existante, sinon laisser vide">
+          <button type="button" class="btn btn-primary btn-sm" id="recNewSupplierConfirm">✅ Ajouter et sélectionner</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Quantité reçue</label>
+        <input type="number" id="recQty" min="1" placeholder="0" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Référence du bon / bordereau</label>
+        <input type="text" id="recBonRef" placeholder="N° bon fournisseur">
+      </div>
+
+      <div id="recDebtZone" style="display:none;background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;">💳 Dette fournisseur (comme sur le bon)</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Solde précédent : <b id="recSoldePrecedent">0 دج</b></div>
+        <div class="field">
+          <label>Montant de la marchandise (دج)</label>
+          <input type="number" id="recMontantMarchandise" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Versement (si vous payez une partie ou tout)</label>
+          <input type="number" id="recVersement" placeholder="0">
+        </div>
+        <div style="font-size:13px;font-weight:800;text-align:center;padding-top:8px;border-top:1px dashed var(--line);">
+          Nouveau solde : <span id="recSoldeNouveau" style="color:var(--danger);">0 دج</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Note (optionnel)</label>
+        <textarea id="recNote" placeholder="Remarques..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="saveReceptionBtn">✅ Enregistrer</button>
+    </div>
+    <div class="section-sub" style="margin-bottom:8px;">Mes réceptions récentes</div>
+    <div style="background:var(--card);border-radius:13px;border:1.5px solid var(--line);padding:10px 12px;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="recHistPresetBtns">
+        <button class="date-preset-btn active" data-rechperiod="month">Ce mois</button>
+        <button class="date-preset-btn" data-rechperiod="lastmonth">Mois dernier</button>
+        <button class="date-preset-btn" data-rechperiod="week">7 jours</button>
+        <button class="date-preset-btn" data-rechperiod="all">Tout</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Du</label>
+          <input type="date" id="recHistDateFrom" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Au</label>
+          <input type="date" id="recHistDateTo" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+      </div>
+    </div>
+    <div id="receptionsList"></div>
+  </section>
+
+  <!-- ===== VUE RETOUR ===== -->
+  <section class="view" id="view-retour">
+    <div class="section-title">📤 Nouveau retour</div>
+    <div class="section-sub">Vérifie physiquement avec la feuille de la société de livraison</div>
+
+    <!-- IMPORT EN MASSE -->
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:6px;">📄 Import en masse (fichier .txt)</div>
+      <div class="section-sub" style="margin-bottom:12px;">Un tracking par ligne. Les produits et quantités sont remplis automatiquement.</div>
+      <input type="file" id="retFileInput" accept=".txt" style="display:none;">
+      <button class="btn btn-outline btn-block" id="retFilePickBtn">📎 Choisir un fichier .txt</button>
+      <div id="retFileName" style="font-size:11.5px;color:var(--muted);margin-top:8px;display:none;"></div>
+      <div id="retImportPreview" style="margin-top:12px;"></div>
+      <button class="btn btn-primary btn-block" id="retConfirmImportBtn" style="display:none;margin-top:10px;">✅ Confirmer l'import</button>
+    </div>
+
+    <div class="section-sub" style="text-align:center;margin:-6px 0 14px;">— ou saisie manuelle —</div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Tracking Noest (remplit automatiquement)</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="retTrackingLookup" placeholder="Ex: ABC123XYZ" style="flex:1;">
+          <button class="btn btn-outline btn-sm" id="retLookupBtn">🔍</button>
+        </div>
+        <div id="retOtherProducts" style="margin-top:8px;"></div>
+      </div>
+      <div class="field">
+        <label>Produit</label>
+        <select id="retProductSelect"></select>
+      </div>
+      <div class="field" id="retVariantWrap" style="display:none;">
+        <label>Variante</label>
+        <select id="retVariantSelect"></select>
+      </div>
+      <div class="field">
+        <label>Quantité retournée</label>
+        <input type="number" id="retQty" min="1" placeholder="0" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Note de vérification</label>
+        <textarea id="retNote" placeholder="Ex: colis intact, conforme à la feuille..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="saveReturnBtn">✅ Enregistrer le retour</button>
+    </div>
+    <div class="section-sub" style="margin-bottom:8px;">Mes retours récents</div>
+    <div style="background:var(--card);border-radius:13px;border:1.5px solid var(--line);padding:10px 12px;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="retHistPresetBtns">
+        <button class="date-preset-btn active" data-rethperiod="month">Ce mois</button>
+        <button class="date-preset-btn" data-rethperiod="lastmonth">Mois dernier</button>
+        <button class="date-preset-btn" data-rethperiod="week">7 jours</button>
+        <button class="date-preset-btn" data-rethperiod="all">Tout</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Du</label>
+          <input type="date" id="retHistDateFrom" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Au</label>
+          <input type="date" id="retHistDateTo" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+      </div>
+    </div>
+        <div id="returnsList"></div>
+  </section>
+
+<!-- ===== VUE AJUSTEMENT ===== -->
+  <section class="view" id="view-ajustement">
+    <div class="section-title">🛠️ Ajustement manuel (casse, comptage)</div>
+    <div class="section-sub">Corrige le stock d'un produit : casse, perte, écart de comptage physique</div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Produit</label>
+        <select id="adjProductSelect"></select>
+      </div>
+      <div class="field" id="adjVariantWrap" style="display:none;">
+        <label>Variante</label>
+        <select id="adjVariantSelect"></select>
+      </div>
+      <div class="field">
+        <label>Quantité (négatif = perte/casse, positif = correction +)</label>
+        <input type="number" id="adjQty" placeholder="Ex: -2">
+      </div>
+      <div class="field">
+        <label>Raison</label>
+        <input type="text" id="adjReason" placeholder="Ex: casse en dépôt, comptage physique...">
+      </div>
+      <button class="btn btn-primary btn-block" id="saveAdjustmentBtn">✅ Enregistrer l'ajustement</button>
+    </div>
+    <div class="section-sub" style="margin-bottom:8px;">Historique des ajustements</div>
+    <div id="adjustmentsList"></div>
+  </section>
+
+<!-- ===== VUE LIVRÉ MANUEL (hors société de livraison) ===== -->
+  <section class="view" id="view-livremanuel">
+    <div class="section-title">🏍️ Commandes livrées hors société de livraison</div>
+    <div class="section-sub">Colis remis à un livreur local (proximité) — enregistre le tracking une fois livré</div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Tracking</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="mdTrackingInput" placeholder="Ex: EC123ABC" style="flex:1;">
+          <button class="btn btn-outline btn-sm" id="mdLookupBtn">🔍</button>
+        </div>
+      </div>
+      <div id="mdFoundInfo" style="display:none;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:8px;">
+        <div style="font-weight:700;font-size:14px;" id="mdFoundName"></div>
+        <div style="font-size:13px;color:var(--muted);" id="mdFoundPhone"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="mdFoundProduct"></div>
+      </div>
+      <button class="btn btn-primary btn-block" id="mdValidateBtn" style="margin-top:12px;display:none;">✅ Marquer comme livrée</button>
+      <button class="btn btn-outline btn-block" id="mdAddAnotherBtn" style="margin-top:8px;display:none;">➕ Ajouter une autre commande</button>
+    </div>
+
+    <div class="section-sub" style="margin-bottom:8px;">Historique des livraisons locales</div>
+    <div id="mdHistoryList"></div>
+  </section>
+
+  <!-- ===== VUE HISTORIQUE ===== -->
+  <section class="view" id="view-historique">
+    <div class="section-title">🕒 Historique</div>
+    <div class="section-sub">Tous les mouvements récents du dépôt</div>
+    <div id="historiqueList"></div>
+  </section>
+
+  <!-- ===== VUE CAISSE (madjid + admin uniquement) ===== -->
+  <section class="view" id="view-caisse">
+    <div class="section-title">💰 Caisse</div>
+    <div class="section-sub">Entrées, sorties et comparaison avec la caisse réelle</div>
+
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;" id="caisseKpiPresetBtns">
+      <button type="button" class="date-preset-btn active" data-caissekpiperiod="all">Tout</button>
+      <button type="button" class="date-preset-btn" data-caissekpiperiod="week">Cette semaine</button>
+      <button type="button" class="date-preset-btn" data-caissekpiperiod="month">Ce mois</button>
+      <button type="button" class="date-preset-btn" id="caisseKpiCalendarToggle" title="Choisir une période personnalisée">📅</button>
+    </div>
+    <div id="caisseKpiDateRange" style="display:none;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <div style="flex:1;min-width:120px;">
+        <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Du</label>
+        <input type="date" id="caisseKpiDateFrom" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+      </div>
+      <div style="flex:1;min-width:120px;">
+        <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Au</label>
+        <input type="date" id="caisseKpiDateTo" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+      </div>
+    </div>
+
+    <div id="caisseKpiRow" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;"></div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;">➕ Nouveau mouvement</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button type="button" class="btn btn-outline btn-block caisse-type-btn active" data-ctype="entree" id="caisseTypeEntree" style="color:var(--brand-dark);border-color:var(--brand);">📥 Entrée</button>
+        <button type="button" class="btn btn-outline btn-block caisse-type-btn" data-ctype="sortie" id="caisseTypeSortie">📤 Sortie</button>
+      </div>
+
+      <div class="field" id="caisseMotifTypeField" style="display:none;">
+        <label>Type de sortie</label>
+        <select id="caisseMotifType">
+          <option value="general">Général (motif libre)</option>
+          <option value="versement_fournisseur">💵 Versement fournisseur</option>
+        </select>
+      </div>
+      <div class="field" id="caisseSupplierField" style="display:none;">
+        <label>Fournisseur</label>
+        <select id="caisseSupplierSelect"></select>
+      </div>
+      <div class="field" id="caisseReceptionField" style="display:none;">
+        <label>Réception associée (optionnel)</label>
+        <select id="caisseReceptionSelect"><option value="">— Aucune (réduction de dette générale) —</option></select>
+      </div>
+
+      <div class="field">
+        <label>Montant (دج)</label>
+        <input type="number" id="caisseAmount" placeholder="0" inputmode="numeric">
+      </div>
+      <div class="field" id="caisseMotifField">
+        <label>Motif</label>
+        <input type="text" id="caisseMotif" placeholder="Ex: vente comptant, dette client, achat fournitures...">
+      </div>
+      <button class="btn btn-primary btn-block" id="saveCaisseBtn">✅ Enregistrer</button>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:6px;">🧮 Comptage physique</div>
+      <div class="section-sub" style="margin-bottom:10px;">Compare le montant réellement en caisse avec le solde théorique</div>
+      <div class="field">
+        <label>Montant compté physiquement (دج)</label>
+        <input type="number" id="comptageAmount" placeholder="0" inputmode="numeric">
+      </div>
+      <div id="comptageResult" style="display:none;margin-bottom:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700;"></div>
+      <button class="btn btn-outline btn-block" id="compareComptageBtn">🔍 Comparer</button>
+      <button class="btn btn-primary btn-block" id="saveComptageBtn" style="display:none;margin-top:8px;">✅ Enregistrer ce comptage</button>
+    </div>
+
+    <div class="section-sub" style="margin-bottom:8px;">Mouvements récents</div>
+    <div style="background:var(--card);border-radius:13px;border:1.5px solid var(--line);padding:10px 12px;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="caisseHistPresetBtns">
+        <button class="date-preset-btn active" data-caissehperiod="month">Ce mois</button>
+        <button class="date-preset-btn" data-caissehperiod="lastmonth">Mois dernier</button>
+        <button class="date-preset-btn" data-caissehperiod="week">7 jours</button>
+        <button class="date-preset-btn" data-caissehperiod="all">Tout</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Du</label>
+          <input type="date" id="caisseHistDateFrom" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Au</label>
+          <input type="date" id="caisseHistDateTo" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+      </div>
+    </div>
+    <div id="caisseList"></div>
+
+    <div class="section-sub" style="margin:16px 0 8px;">Historique des comptages</div>
+    <div id="comptagesList"></div>
+  </section>
+
+  <!-- ===== VUE FOURNISSEURS (madjid + admin uniquement) ===== -->
+  <section class="view" id="view-fournisseurs">
+    <div class="section-title">🏭 Fournisseurs</div>
+    <div class="section-sub">Suivi des dettes — solde précédent + marchandise − versement = nouveau solde</div>
+    <div id="fournisseursKpi" style="margin-bottom:14px;"></div>
+    <div id="fournisseursList"></div>
+  </section>
+
+</div>
+
+<!-- Modal détail fournisseur (relevé) -->
+<div class="modal-overlay" id="supplierLedgerModal">
+  <div class="modal-sheet" style="position:relative;max-width:520px;">
+    <button class="modal-close" id="closeSupplierLedgerModal">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="supplierLedgerTitle">Fournisseur</div>
+    <div id="supplierLedgerSolde" style="text-align:center;padding:14px;background:var(--bg);border-radius:12px;margin-bottom:8px;"></div>
+    <button type="button" id="toggleSoldeInitialBtn" style="font-size:11.5px;color:var(--brand-dark);font-weight:700;margin-bottom:14px;display:block;width:100%;text-align:center;">✏️ Modifier le solde d'ouverture</button>
+    <div id="soldeInitialEditZone" class="mini-zone" style="margin-bottom:14px;">
+      <input type="number" id="editSoldeInitial" placeholder="Solde d'ouverture (دج)">
+      <button type="button" class="btn btn-outline btn-sm" id="saveSoldeInitialBtn">✅ Enregistrer le solde d'ouverture</button>
+    </div>
+    <button class="btn btn-primary btn-block" id="openVersementBtn" style="margin-bottom:14px;">💵 Verser un paiement</button>
+    <div id="supplierLedgerVersementForm" style="display:none;margin-bottom:14px;padding:12px;background:var(--bg);border-radius:12px;">
+      <div class="field"><label>Montant versé (دج)</label><input type="number" id="versementAmount"></div>
+      <div class="field"><label>Note (optionnel)</label><input type="text" id="versementNote" placeholder="Ex: paiement partiel..."></div>
+      <button class="btn btn-primary btn-block" id="confirmVersementBtn">✅ Confirmer le versement</button>
+    </div>
+    <div class="section-sub" style="margin-bottom:8px;">Relevé (du plus récent au plus ancien)</div>
+    <div id="supplierLedgerList"></div>
+  </div>
+</div>
+
+
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="stock"><span class="nav-icon">📦</span>Stock</button>
+    <button class="nav-item" data-view="reception"><span class="nav-icon">📥</span>Réception</button>
+  <button class="nav-item" data-view="retour"><span class="nav-icon">📤</span>Retour</button>
+  <button class="nav-item" data-view="ajustement"><span class="nav-icon">🛠️</span>Ajustement</button>
+  <button class="nav-item" data-view="livremanuel"><span class="nav-icon">🏍️</span>Livré manuel</button>
+  <button class="nav-item" data-view="historique"><span class="nav-icon">🕒</span>Historique</button>
+  <button class="nav-item caisse-nav-item" data-view="caisse" style="display:none;"><span class="nav-icon">💰</span>Caisse</button>
+  <button class="nav-item caisse-nav-item" data-view="fournisseurs" style="display:none;"><span class="nav-icon">🏭</span>Fournisseurs</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal détails réception -->
+<div class="modal-overlay" id="receptionDetailModal">
+  <div class="modal-sheet" style="position:relative;">
+    <button class="modal-close" id="closeReceptionDetailModal">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title">📥 Détails de la réception</div>
+    <div id="receptionDetailView">
+      <div id="receptionDetailBody" style="font-size:13.5px;margin-bottom:16px;"></div>
+      <button class="btn btn-outline btn-block" id="editReceptionBtn" style="margin-bottom:8px;">✏️ Modifier</button>
+      <button class="btn btn-danger btn-block" id="deleteReceptionBtn">🗑️ Annuler cette réception</button>
+    </div>
+    <div id="receptionDetailEdit" style="display:none;">
+      <div class="field">
+        <label>Quantité</label>
+        <input type="number" id="editRecQty" min="1">
+      </div>
+      <div class="field">
+        <label>Fournisseur</label>
+        <select id="editRecSupplierSelect"></select>
+      </div>
+      <div class="field">
+        <label>Montant de la marchandise (دج, dette)</label>
+        <input type="number" id="editRecMontantMarchandise">
+      </div>
+      <div class="field">
+        <label>Référence du bon</label>
+        <input type="text" id="editRecBonRef">
+      </div>
+      <div class="field">
+        <label>Note</label>
+        <textarea id="editRecNote"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="saveReceptionEditBtn">✅ Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal détails / modification retour -->
+<div class="modal-overlay" id="returnDetailModal">
+  <div class="modal-sheet" style="position:relative;">
+    <button class="modal-close" id="closeReturnDetailModal">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title">📤 Détails du retour</div>
+    <div id="returnDetailView">
+      <div id="returnDetailBody" style="font-size:13.5px;margin-bottom:16px;"></div>
+      <button class="btn btn-outline btn-block" id="editReturnBtn" style="margin-bottom:8px;">✏️ Modifier</button>
+      <button class="btn btn-danger btn-block" id="deleteReturnBtn">🗑️ Annuler ce retour</button>
+    </div>
+    <div id="returnDetailEdit" style="display:none;">
+      <div class="field">
+        <label>Quantité</label>
+        <input type="number" id="editRetQty" min="1">
+      </div>
+      <div class="field">
+        <label>Tracking Noest</label>
+        <input type="text" id="editRetTracking">
+      </div>
+      <div class="field">
+        <label>Note</label>
+        <textarea id="editRetNote"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="saveReturnEditBtn">✅ Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal détails / modification mouvement caisse -->
+<div class="modal-overlay" id="caisseDetailModal">
+  <div class="modal-sheet" style="position:relative;">
+    <button class="modal-close" id="closeCaisseDetailModal">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="caisseDetailTitle">Mouvement de caisse</div>
+    <div id="caisseDetailView">
+      <div id="caisseDetailBody" style="font-size:13.5px;margin-bottom:16px;"></div>
+      <button class="btn btn-outline btn-block" id="editCaisseBtn" style="margin-bottom:8px;">✏️ Modifier</button>
+      <button class="btn btn-danger btn-block" id="deleteCaisseBtn">🗑️ Supprimer</button>
+    </div>
+    <div id="caisseDetailEdit" style="display:none;">
+      <div class="field">
+        <label>Montant (دج)</label>
+        <input type="number" id="editCaisseAmount">
+      </div>
+      <div class="field">
+        <label>Motif</label>
+        <input type="text" id="editCaisseMotif">
+      </div>
+      <button class="btn btn-primary btn-block" id="saveCaisseEditBtn">✅ Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://txlcppqnpoqnyjskevbh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KuJ5n4MUqbIPEs-JSXNKhg_lhkDGbyN";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2200);
+}
+function uid(){ return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,9); }
+function fmt(n){ return Number(n||0).toLocaleString('fr-FR'); }
+
+// Helpers de filtre de date — réutilisés par Réceptions / Retours / Caisse
+function dateToMs(dateStr){ return dateStr ? new Date(dateStr+'T00:00:00').getTime() : null; }
+function msToDateStr(ms){ return new Date(ms).toISOString().slice(0,10); }
+function startOfMonth(offset=0){
+  const d = new Date(); d.setDate(1);
+  d.setMonth(d.getMonth()+offset);
+  d.setHours(0,0,0,0); return d.getTime();
+}
+function endOfMonth(offset=0){
+  const d = new Date(); d.setDate(1);
+  d.setMonth(d.getMonth()+offset+1);
+  d.setHours(0,0,0,0); return d.getTime()-1;
+}
+function applyQuickPeriod(period, fromId, toId){
+  let from, to;
+  const now = Date.now();
+  if(period==='month'){ from=startOfMonth(0); to=endOfMonth(0); }
+  else if(period==='lastmonth'){ from=startOfMonth(-1); to=endOfMonth(-1); }
+  else if(period==='week'){ from=now-7*864e5; to=now; }
+  else { from=null; to=null; }
+  document.getElementById(fromId).value = from ? msToDateStr(from) : '';
+  document.getElementById(toId).value   = to   ? msToDateStr(to)   : '';
+}
+function inDateRange(ms, fromStr, toStr){
+  const fromMs = fromStr ? dateToMs(fromStr) : null;
+  const toMs   = toStr ? dateToMs(toStr)+86399999 : null;
+  if(fromMs!=null && ms<fromMs) return false;
+  if(toMs!=null && ms>toMs) return false;
+  return true;
+}
+let stockDateFiltersInit = false;
+let caisseDateFilterInit = false;
+
+/* ============ LOGIN ============ */
+const LOGIN_KEY = 'qs_stock_auth';
+let CURRENT_AGENT = null;
+
+async function hashPassword(password){
+  const data = new TextEncoder().encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function loadAgentsForLogin(){
+  const {data,error} = await sb.from('stock_agents').select('*').eq('active', true).order('name',{ascending:true});
+  const sel = document.getElementById('loginAgentSelect');
+  if(error || !data || !data.length){
+    sel.innerHTML = '<option value="">Aucun agent — contacter l\'admin</option>';
+    return;
+  }
+  sel.innerHTML = data.map(a=>`<option value="${a.id}" data-hash="${a.password_hash}" data-name="${a.name}" data-admin="${a.is_admin}">${a.name}</option>`).join('');
+}
+
+async function doLogin(){
+  const sel = document.getElementById('loginAgentSelect');
+  const opt = sel.options[sel.selectedIndex];
+  const pass = document.getElementById('loginPass').value || '';
+  if(!opt || !opt.value){ showToast('Choisis un agent'); return; }
+  const hash = await hashPassword(pass);
+  if(hash === opt.dataset.hash){
+    CURRENT_AGENT = { id:opt.value, name:opt.dataset.name, is_admin: opt.dataset.admin === 'true' };
+    sessionStorage.setItem(LOGIN_KEY, JSON.stringify(CURRENT_AGENT));
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('loginError').style.display = 'none';
+    startApp();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginPass').value = '';
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem(LOGIN_KEY);
+  location.reload();
+}
+
+/* ============ NAV ============ */
+const views = ['stock','reception','retour','ajustement','livremanuel','historique','caisse','fournisseurs'];
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const view = el.dataset.view;
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+    views.forEach(v=> document.getElementById('view-'+v).classList.toggle('active', v===view));
+        if(view==='historique') renderHistorique();
+    if(view==='ajustement') renderAdjustmentsList();
+    if(view==='caisse') renderCaisseView();
+    if(view==='fournisseurs') renderFournisseursView();
+    if(view==='livremanuel') mdRenderHistory();
+    window.scrollTo({top:0, behavior:'instant'});
+  });
+});
+
+/* ============ DATA ============ */
+let PRODUCTS = [];
+let ORDERS_LIGHT = [];      // pour lookup tracking → produit/qty
+let CARTS_LIGHT = [];
+let lastOrdersLightSyncAt = 0;
+let lastCartsLightSyncAt = 0;
+let productsLastLoadedAt = 0;
+let STOCK_RECEPTIONS = [];
+let STOCK_RETURNS = [];
+let STOCK_ADJUSTMENTS = [];
+let SUPPLIERS = [];
+let STOCK_CAISSE = [];
+let STOCK_COMPTAGES = [];
+let SUPPLIER_LEDGER = [];
+let caisseTypeSelected = 'entree';
+const CAISSE_AGENT_NAME = 'madjid';
+
+function rowToProduct(r){
+  return { id:r.id, name:r.name, category:r.category, image:(r.images&&r.images[0])||r.image||'',
+    purchasePrice: r.purchase_price!=null?Number(r.purchase_price):null,
+    variants: r.variants||[] };
+}
+
+async function loadProducts(){
+  const {data,error} = await sb.from('products').select('id,name,category,image,images,purchase_price,active,variants').order('created_at',{ascending:false});
+  if(error){ console.error('loadProducts:',error.message); return []; }
+  return (data||[]).map(rowToProduct);
+}
+async function fetchAllRows(table, selectStr, orderCol, ascending, logLabel, filterFn){
+  const PAGE_SIZE = 1000;
+  let allRows = [];
+  let offset = 0;
+  while(true){
+    let query = sb.from(table).select(selectStr);
+    if(typeof filterFn === 'function') query = filterFn(query);
+    const { data, error } = await query
+      .order(orderCol, { ascending })
+      .range(offset, offset + PAGE_SIZE - 1);
+    if(error){ console.error(`${logLabel}:`, error ? (error.message || error.error_description || error.code || String(error)) : 'unknown error'); break; }
+    if(!data || data.length === 0) break;
+    allRows = allRows.concat(data);
+    if(data.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return allRows;
+}
+
+async function loadOrdersLight(){
+  return await fetchAllRows('orders', 'id,product_id,product_name,qty,noest_tracking,variant,order_items', 'created_at', false, 'loadOrdersLight',
+    q => q.not('noest_tracking','is',null));
+}
+async function loadCartsLight(){
+  return await fetchAllRows('abandoned_carts', 'id,product_id,product_name,qty,noest_tracking,variant,order_items', 'created_at', false, 'loadCartsLight',
+    q => q.not('noest_tracking','is',null));
+}
+// Versions incrémentales : ne récupèrent que ce qui a changé depuis le dernier contrôle
+function mergeLightRowsById(existingArray, freshRows){
+  freshRows.forEach(fresh=>{
+    const idx = existingArray.findIndex(x=>x.id===fresh.id);
+    if(idx>=0) existingArray[idx] = fresh;
+    else existingArray.push(fresh);
+  });
+}
+async function syncOrdersLightIncremental(){
+  const since = lastOrdersLightSyncAt;
+  const now = Date.now();
+  const {data,error} = await sb.from('orders').select('id,product_id,product_name,qty,noest_tracking,variant,order_items').not('noest_tracking','is',null).gt('updated_at',since);
+  if(error){ console.error('syncOrdersLightIncremental:',error.message); return; }
+  if(data && data.length) mergeLightRowsById(ORDERS_LIGHT, data);
+  lastOrdersLightSyncAt = now;
+}
+async function syncCartsLightIncremental(){
+  const since = lastCartsLightSyncAt;
+  const now = Date.now();
+  const {data,error} = await sb.from('abandoned_carts').select('id,product_id,product_name,qty,noest_tracking,variant,order_items').not('noest_tracking','is',null).gt('updated_at',since);
+  if(error){ console.error('syncCartsLightIncremental:',error.message); return; }
+  if(data && data.length) mergeLightRowsById(CARTS_LIGHT, data);
+  lastCartsLightSyncAt = now;
+}
+async function loadStockReceptions(){
+  const {data,error} = await sb.from('stock_receptions').select('*').order('created_at',{ascending:false});
+  if(error){ console.error('loadStockReceptions:',error.message); return []; }
+  return data||[];
+}
+async function loadStockReturns(){
+  const {data,error} = await sb.from('stock_returns').select('*').order('created_at',{ascending:false});
+  if(error){ console.error('loadStockReturns:',error.message); return []; }
+  return data||[];
+}
+async function loadStockAdjustments(){
+  const {data,error} = await sb.from('stock_adjustments').select('*').order('created_at',{ascending:false});
+  if(error){ console.error('loadStockAdjustments:',error.message); return []; }
+  return data||[];
+}
+async function loadSuppliers(){
+  const {data,error} = await sb.from('stock_suppliers').select('*').order('name',{ascending:true});
+  if(error){ console.error('loadSuppliers:',error.message); return []; }
+  return data||[];
+}
+async function loadSupplierLedger(){
+  const {data,error} = await sb.from('stock_supplier_ledger').select('*').order('created_at',{ascending:true});
+  if(error){ console.error('loadSupplierLedger:',error.message); return []; }
+  return data||[];
+}
+
+// Calcule le relevé chronologique (solde précédent/nouveau à chaque ligne) pour un fournisseur
+function computeSupplierStatement(supplierId){
+  const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+  let running = Math.round(Number(supplier?.solde_initial || 0)*100);
+  const entries = SUPPLIER_LEDGER.filter(l=>l.supplier_id===supplierId).sort((a,b)=>Number(a.created_at)-Number(b.created_at));
+  const rows = entries.map(l=>{
+    const solde_precedent = Math.round(running)/100;
+    running += (l.type==='reception' ? Math.round(Number(l.montant)*100) : -Math.round(Number(l.montant)*100));
+    return { ...l, solde_precedent, solde_apres: Math.round(running)/100 };
+  });
+  return { rows: rows.reverse(), balance: Math.round(running)/100 }; // plus récent en premier
+}
+function computeSupplierBalance(supplierId){
+  return computeSupplierStatement(supplierId).balance;
+}
+
+function fillProductSelect(sel){
+  sel.innerHTML = '<option value="">— Choisir un produit —</option>' +
+    PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+}
+// Affiche/peuple le sélecteur de variante selon le produit choisi (réception ou retour)
+function wireVariantSelect(productSelectId, variantWrapId, variantSelectId){
+  const prodSel = document.getElementById(productSelectId);
+  const wrap = document.getElementById(variantWrapId);
+  const varSel = document.getElementById(variantSelectId);
+  if(!prodSel || !wrap || !varSel) return;
+  const refresh = ()=>{
+    const p = PRODUCTS.find(x=>x.id===prodSel.value);
+    if(p && p.variants && p.variants.length){
+      wrap.style.display = 'block';
+      varSel.innerHTML = '<option value="">— Sans variante —</option>' +
+        p.variants.map(v=>`<optgroup label="${v.name}">${(v.options||[]).map(o=>`<option value="${o.value}">${o.value}</option>`).join('')}</optgroup>`).join('');
+    } else {
+      wrap.style.display = 'none';
+      varSel.innerHTML = '';
+    }
+  };
+  prodSel.addEventListener('change', refresh);
+  refresh();
+}
+// Prix d'achat effectif d'une variante précise (repli sur le prix d'achat du produit si non défini)
+function getVariantPurchasePrice(product, variantValue){
+  if(!variantValue || !product?.variants?.length) return null;
+  for(const v of product.variants){
+    const opt = (v.options||[]).find(o=>o.value===variantValue);
+    if(opt && opt.purchasePrice!=null) return Number(opt.purchasePrice);
+  }
+  return null;
+}
+function renderAdjustmentsList(){
+  const el = document.getElementById('adjustmentsList');
+  if(!el) return;
+  const base = isCaisseAgent() ? STOCK_ADJUSTMENTS : STOCK_ADJUSTMENTS.filter(a=>a.agent_name===CURRENT_AGENT.name);
+  if(!base.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">🛠️</div>Aucun ajustement</div>'; return; }
+  el.innerHTML = base.slice(0,60).map(a=>`
+    <div class="card" style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:13px;font-weight:700;">${a.product_name}</div>
+        <div style="font-size:13px;font-weight:800;color:${a.qty>=0?'var(--brand-dark)':'var(--danger)'};">${a.qty>=0?'+':''}${a.qty}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${new Date(Number(a.created_at)).toLocaleString('fr-FR')}</div>
+      ${a.reason?`<div style="font-size:11.5px;color:var(--ink);margin-top:4px;">${a.reason}</div>`:''}
+    </div>
+  `).join('');
+}
+document.getElementById('saveAdjustmentBtn')?.addEventListener('click', async ()=>{
+  const pid = document.getElementById('adjProductSelect').value;
+  const qty = parseInt(document.getElementById('adjQty').value||'0',10);
+  if(!pid){ showToast('Choisis un produit'); return; }
+  if(!qty){ showToast('Quantité invalide'); return; }
+  const product = PRODUCTS.find(p=>p.id===pid);
+  const variantValue = document.getElementById('adjVariantSelect')?.value || null;
+  const row = {
+    id:'adj_'+uid(), product_id:pid, product_name:(product?.name||'')+(variantValue?` (${variantValue})`:''), qty,
+    variant:variantValue,
+    reason:document.getElementById('adjReason').value.trim(), agent_name:CURRENT_AGENT.name, created_at:Date.now()
+  };
+  const {error} = await sb.from('stock_adjustments').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('adjQty').value=''; document.getElementById('adjReason').value='';
+  if(document.getElementById('adjVariantSelect')) document.getElementById('adjVariantSelect').value='';
+  showToast('✅ Ajustement enregistré');
+  STOCK_ADJUSTMENTS = await loadStockAdjustments();
+  renderAdjustmentsList();
+  renderStockList();
+});
+function fillSupplierSelect(sel, selectedId){
+  sel.innerHTML = '<option value="">— Aucun —</option>' +
+    SUPPLIERS.map(s=>`<option value="${s.id}" ${s.id===selectedId?'selected':''}>${s.name}</option>`).join('');
+}
+
+/* ============ CALCUL STOCK ============ */
+function computeStockMap(){
+  const map = {};
+  const ensure = pid => map[pid] || (map[pid] = {received:0, injected:0, returned:0, adjusted:0});
+  STOCK_RECEPTIONS.forEach(r=>{ if(r.product_id) ensure(r.product_id).received += Number(r.qty||0); });
+  STOCK_RETURNS.forEach(r=>{ if(r.product_id) ensure(r.product_id).returned += Number(r.qty||0); });
+  STOCK_ADJUSTMENTS.forEach(a=>{ if(a.product_id) ensure(a.product_id).adjusted += Number(a.qty||0); });
+  ORDERS_LIGHT.forEach(o=>{
+    if(Array.isArray(o.order_items) && o.order_items.length){
+      o.order_items.forEach(it=>{ if(it.product_id) ensure(it.product_id).injected += Number(it.qty||0); });
+    } else if(o.product_id){ ensure(o.product_id).injected += Number(o.qty||0); }
+  });
+  CARTS_LIGHT.forEach(c=>{
+    if(Array.isArray(c.order_items) && c.order_items.length){
+      c.order_items.forEach(it=>{ if(it.product_id) ensure(it.product_id).injected += Number(it.qty||0); });
+    } else if(c.product_id){ ensure(c.product_id).injected += Number(c.qty||0); }
+  });
+  Object.keys(map).forEach(pid=>{ const m=map[pid]; m.current = m.received - m.injected + m.returned + m.adjusted; });
+  return map;
+}
+// Prix d'achat effectif : priorité à la fiche produit, sinon repli sur la dernière réception ayant un prix renseigné
+function getEffectivePurchasePrice(product){
+  if(product && product.purchasePrice) return product.purchasePrice;
+  const recs = STOCK_RECEPTIONS.filter(r=>r.product_id===product?.id && r.purchase_price!=null)
+    .sort((a,b)=> Number(b.created_at) - Number(a.created_at));
+  return recs.length ? Number(recs[0].purchase_price) : 0;
+}
+// Répartition du stock net (reçu - retourné) par variante, avec sa valeur exacte propre.
+// Basée sur les réceptions/retours qui indiquent la variante (pas les injections, qui ne la précisent pas encore).
+// Quantité injectée (vendue/expédiée) par produit+variante, à partir de ORDERS_LIGHT/CARTS_LIGHT déjà en mémoire
+function computeInjectedByProductVariant(){
+  const map = {};
+  const add = (pid, variant, qty) => { if(!pid) return; const key = pid+'::'+(variant||''); map[key] = (map[key]||0) + Number(qty||0); };
+  (ORDERS_LIGHT||[]).forEach(o=>{
+    if(Array.isArray(o.order_items) && o.order_items.length){
+      o.order_items.forEach(it=> add(it.product_id, it.variant, it.qty));
+    } else {
+      add(o.product_id, o.variant, o.qty);
+    }
+  });
+  (CARTS_LIGHT||[]).forEach(c=>{
+    if(Array.isArray(c.order_items) && c.order_items.length){
+      c.order_items.forEach(it=> add(it.product_id, it.variant, it.qty));
+    } else {
+      add(c.product_id, c.variant, c.qty);
+    }
+  });
+  return map;
+}
+function computeVariantBreakdown(product){
+  if(!product?.variants?.length) return null;
+  const injectedMap = computeInjectedByProductVariant();
+  const rows = [];
+  product.variants.forEach(v=>{
+    (v.options||[]).forEach(o=>{
+      const recQty = STOCK_RECEPTIONS.filter(r=>r.product_id===product.id && r.variant===o.value).reduce((s,r)=>s+Number(r.qty||0),0);
+      const retQty = STOCK_RETURNS.filter(r=>r.product_id===product.id && r.variant===o.value).reduce((s,r)=>s+Number(r.qty||0),0);
+      const injQty = injectedMap[product.id+'::'+o.value] || 0;
+      const adjQty = STOCK_ADJUSTMENTS.filter(a=>a.product_id===product.id && a.variant===o.value).reduce((s,a)=>s+Number(a.qty||0),0);
+      const netQty = recQty - injQty + retQty + adjQty;
+      if(recQty>0 || retQty>0 || injQty>0 || adjQty!==0){
+        const pp = o.purchasePrice!=null ? Number(o.purchasePrice) : getEffectivePurchasePrice(product);
+        rows.push({ label:`${v.name}: ${o.value}`, qty:netQty, pp, value: Math.max(netQty,0)*pp });
+      }
+    });
+  });
+  return rows.length ? rows : null;
+}
+function stockStatusOf(qty){
+  if(qty<=0) return {label:'⛔ Rupture', color:'var(--danger)', bg:'var(--danger-light)'};
+  if(qty<5) return {label:'⚠️ Faible', color:'var(--warn)', bg:'var(--warn-light)'};
+  return {label:'✅ OK', color:'var(--brand-dark)', bg:'var(--brand-light)'};
+}
+
+function renderStockList(){
+  const q = (document.getElementById('stockSearch').value||'').toLowerCase().trim();
+  const stockMap = computeStockMap();
+  const showValue = isCaisseAgent();
+  let list = PRODUCTS.filter(p=> !q || p.name.toLowerCase().includes(q));
+
+  const kpiEl = document.getElementById('stockValueKpi');
+  if(showValue){
+    const totalValue = PRODUCTS.reduce((sum,p)=>{
+      const variantRows = computeVariantBreakdown(p);
+      if(variantRows) return sum + variantRows.reduce((s,v)=>s+v.value,0);
+      const m = stockMap[p.id] || {current:0};
+      return sum + Math.max(m.current,0) * getEffectivePurchasePrice(p);
+    }, 0);
+    kpiEl.style.display = 'block';
+    kpiEl.innerHTML = `<div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">💎 VALEUR TOTALE DU STOCK</div><div style="font-size:20px;font-weight:900;color:var(--brand-dark);">${fmt(totalValue)} دج</div></div>`;
+  } else {
+    kpiEl.style.display = 'none';
+  }
+
+  if(!list.length){ document.getElementById('stockList').innerHTML = '<div class="empty-state"><div class="e-icon">📦</div>Aucun produit</div>'; return; }
+  document.getElementById('stockList').innerHTML = list.map(p=>{
+    const m = stockMap[p.id] || {current:0};
+    const variantRows = computeVariantBreakdown(p);
+    // Si le produit a des variantes : la quantité et la valeur globales viennent de la somme des variantes
+    // (chaque variante ayant potentiellement son propre prix), pas du prix unique du produit.
+    const displayQty = variantRows ? variantRows.reduce((s,v)=>s+v.qty,0) : m.current;
+    const displayValue = variantRows ? variantRows.reduce((s,v)=>s+v.value,0) : Math.max(m.current,0) * getEffectivePurchasePrice(p);
+    const st = stockStatusOf(displayQty);
+    const pp = getEffectivePurchasePrice(p);
+    return `<div class="prod-row">
+      <img class="prod-thumb" src="${p.image}" alt="">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+        ${variantRows?variantRows.map(v=>`<div style="font-size:10.5px;color:var(--muted);margin-top:1px;">↳ ${v.label} : ${v.qty}${showValue&&v.pp?` × ${fmt(v.pp)} دج = <b style="color:var(--brand-dark);">${fmt(v.value)} دج</b>`:''}</div>`).join(''):''}
+        <div class="status-pill" style="background:${st.bg};color:${st.color};margin-top:4px;">${st.label}</div>
+        ${showValue?`<div style="font-size:10.5px;color:var(--brand-dark);margin-top:3px;font-weight:600;">💎 ${fmt(displayValue)} دج${(!variantRows&&pp)?` (${fmt(pp)} دج/u)`:(!variantRows?' (prix d\'achat non défini)':'')}</div>`:''}
+      </div>
+      <div style="font-size:19px;font-weight:900;flex-shrink:0;">${displayQty}</div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('stockSearch').addEventListener('input', renderStockList);
+
+// Filtres de date — historique Réceptions / Retours / Caisse
+document.getElementById('recHistPresetBtns').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-rechperiod]'); if(!btn) return;
+  document.querySelectorAll('#recHistPresetBtns .date-preset-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyQuickPeriod(btn.dataset.rechperiod, 'recHistDateFrom', 'recHistDateTo');
+  renderReceptionsList();
+});
+['recHistDateFrom','recHistDateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', renderReceptionsList);
+});
+
+document.getElementById('retHistPresetBtns').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-rethperiod]'); if(!btn) return;
+  document.querySelectorAll('#retHistPresetBtns .date-preset-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyQuickPeriod(btn.dataset.rethperiod, 'retHistDateFrom', 'retHistDateTo');
+  renderReturnsList();
+});
+['retHistDateFrom','retHistDateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', renderReturnsList);
+});
+
+document.getElementById('caisseHistPresetBtns').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-caissehperiod]'); if(!btn) return;
+  document.querySelectorAll('#caisseHistPresetBtns .date-preset-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyQuickPeriod(btn.dataset.caissehperiod, 'caisseHistDateFrom', 'caisseHistDateTo');
+  renderCaisseList();
+});
+['caisseHistDateFrom','caisseHistDateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', renderCaisseList);
+});
+
+// Filtre période — Totaux entrées/sorties caisse (en haut de la page Caisse)
+function applyPeriodCaisseKpi(period){
+  let from, to;
+  const now = Date.now();
+  if(period==='month'){ from=startOfMonth(0); to=endOfMonth(0); }
+  else if(period==='week'){ from=now-7*864e5; to=now; }
+  else { from=null; to=null; }
+  document.getElementById('caisseKpiDateFrom').value = from ? msToDateStr(from) : '';
+  document.getElementById('caisseKpiDateTo').value   = to   ? msToDateStr(to)   : '';
+}
+document.getElementById('caisseKpiPresetBtns').addEventListener('click', e=>{
+  const calBtn = e.target.closest('#caisseKpiCalendarToggle');
+  if(calBtn){
+    const box = document.getElementById('caisseKpiDateRange');
+    box.style.display = box.style.display==='none' ? 'flex' : 'none';
+    return;
+  }
+  const btn = e.target.closest('[data-caissekpiperiod]');
+  if(!btn) return;
+  document.querySelectorAll('#caisseKpiPresetBtns .date-preset-btn[data-caissekpiperiod]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyPeriodCaisseKpi(btn.dataset.caissekpiperiod);
+  renderCaisseView();
+});
+['caisseKpiDateFrom','caisseKpiDateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', renderCaisseView);
+});
+
+/* ============ RÉCEPTION ============ */
+function renderReceptionsList(){
+  const base = isCaisseAgent() ? STOCK_RECEPTIONS : STOCK_RECEPTIONS.filter(r=>r.agent_name===CURRENT_AGENT.name);
+  const fromStr = document.getElementById('recHistDateFrom')?.value;
+  const toStr = document.getElementById('recHistDateTo')?.value;
+  const list = base.filter(r=> inDateRange(Number(r.created_at), fromStr, toStr)).slice(0, isCaisseAgent()?80:30);
+  const el = document.getElementById('receptionsList');
+  if(!list.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">📥</div>Aucune réception sur cette période</div>'; return; }
+  el.innerHTML = list.map(r=>`
+    <div class="card reception-row" data-id="${r.id}" style="margin-bottom:9px;cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:13px;font-weight:700;">${r.product_name}</div>
+        <div style="font-size:13px;font-weight:800;color:var(--brand-dark);">+${r.qty}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">
+        ${r.supplier_name?`🏭 ${r.supplier_name} · `:''}${r.bon_reference?`🧾 ${r.bon_reference} · `:''}${isCaisseAgent()?`👷 ${r.agent_name} · `:''}${new Date(Number(r.created_at)).toLocaleString('fr-FR')}
+      </div>
+      ${r.note?`<div style="font-size:12px;color:var(--ink);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);">📝 ${r.note}</div>`:''}
+      <div style="font-size:10.5px;color:var(--brand-dark);font-weight:700;margin-top:6px;">👁️ Voir les détails</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.reception-row').forEach(card=>{
+    card.addEventListener('click', ()=> openReceptionDetail(card.dataset.id));
+  });
+}
+
+function openReceptionDetail(id){
+  const r = STOCK_RECEPTIONS.find(x=>x.id===id);
+  if(!r) return;
+  const linkedLedger = SUPPLIER_LEDGER.filter(l=>l.reception_id===id);
+  const versementsHtml = linkedLedger.filter(l=>l.type==='versement').map(l=>
+    `<div style="font-size:11.5px;color:#0369A1;margin-top:3px;">💵 Versement lié : ${fmt(l.montant)} دج</div>`
+  ).join('');
+  document.getElementById('receptionDetailBody').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">PRODUIT</div><div style="font-weight:700;">${r.product_name}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">QUANTITÉ</div><div style="font-weight:700;color:var(--brand-dark);">+${r.qty}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">FOURNISSEUR</div><div>${r.supplier_name||'—'}</div></div>
+      ${r.montant_marchandise!=null?`<div><div style="color:var(--muted);font-size:11px;font-weight:700;">MONTANT MARCHANDISE (DETTE)</div><div style="font-weight:700;">${fmt(r.montant_marchandise)} دج${versementsHtml}</div></div>`:''}
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">RÉFÉRENCE DU BON</div><div>${r.bon_reference||'—'}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">NOTE</div><div>${r.note||'—'}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">AGENT</div><div>👷 ${r.agent_name}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">DATE</div><div>${new Date(Number(r.created_at)).toLocaleString('fr-FR')}</div></div>
+    </div>
+  `;
+  document.getElementById('deleteReceptionBtn').dataset.id = id;
+  document.getElementById('editReceptionBtn').dataset.id = id;
+  document.getElementById('receptionDetailView').style.display = 'block';
+  document.getElementById('receptionDetailEdit').style.display = 'none';
+  document.getElementById('receptionDetailModal').classList.add('show');
+}
+document.getElementById('closeReceptionDetailModal').addEventListener('click', ()=>{
+  document.getElementById('receptionDetailModal').classList.remove('show');
+});
+document.getElementById('editReceptionBtn').addEventListener('click', ()=>{
+  const id = document.getElementById('editReceptionBtn').dataset.id;
+  const r = STOCK_RECEPTIONS.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('editRecQty').value = r.qty;
+  fillSupplierSelect(document.getElementById('editRecSupplierSelect'), r.supplier_id);
+  document.getElementById('editRecMontantMarchandise').value = r.montant_marchandise ?? '';
+  document.getElementById('editRecBonRef').value = r.bon_reference||'';
+  document.getElementById('editRecNote').value = r.note||'';
+  document.getElementById('receptionDetailView').style.display = 'none';
+  document.getElementById('receptionDetailEdit').style.display = 'block';
+  document.getElementById('saveReceptionEditBtn').dataset.id = id;
+});
+document.getElementById('saveReceptionEditBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('saveReceptionEditBtn').dataset.id;
+  const qty = parseInt(document.getElementById('editRecQty').value||'0',10);
+  if(!qty || qty<=0){ showToast('Quantité invalide'); return; }
+  const supplierId = document.getElementById('editRecSupplierSelect').value;
+  const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+  const montantMarchandise = document.getElementById('editRecMontantMarchandise').value;
+  const montantVal = montantMarchandise!==''? Number(montantMarchandise) : null;
+  const bonRef = document.getElementById('editRecBonRef').value.trim();
+  const note = document.getElementById('editRecNote').value.trim();
+  const {error} = await sb.from('stock_receptions').update({
+    qty, supplier_id: supplierId||null, supplier_name: supplier?.name||null,
+    montant_marchandise: montantVal, bon_reference: bonRef, note
+  }).eq('id', id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  // Synchroniser la ligne de relevé "réception" liée
+  const existingLedger = SUPPLIER_LEDGER.find(l=>l.reception_id===id && l.type==='reception');
+  if(supplierId && montantVal){
+    if(existingLedger){
+      await sb.from('stock_supplier_ledger').update({montant:montantVal, supplier_id:supplierId, supplier_name:supplier?.name||'', updated_at:Date.now()}).eq('id', existingLedger.id);
+    } else {
+      await sb.from('stock_supplier_ledger').insert({
+        id:'ldg_'+uid(), supplier_id:supplierId, supplier_name:supplier?.name||'', type:'reception',
+        montant:montantVal, reception_id:id, caisse_id:null, note:null,
+        created_by:CURRENT_AGENT.name, created_at:Date.now(), updated_at:null
+      });
+    }
+  } else if(existingLedger){
+    await sb.from('stock_supplier_ledger').delete().eq('id', existingLedger.id);
+  }
+  document.getElementById('receptionDetailModal').classList.remove('show');
+  showToast('✅ Réception modifiée');
+  await refreshStockData();
+  await refreshCaisseData();
+});
+document.getElementById('deleteReceptionBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('deleteReceptionBtn').dataset.id;
+  if(!confirm('Annuler cette réception ? Le stock sera recalculé automatiquement.')) return;
+  // Supprimer en cascade les lignes de dette liées + les sorties de caisse liées
+  const linked = SUPPLIER_LEDGER.filter(l=>l.reception_id===id);
+  for(const l of linked){
+    if(l.caisse_id) await sb.from('stock_caisse').delete().eq('id', l.caisse_id);
+    await sb.from('stock_supplier_ledger').delete().eq('id', l.id);
+  }
+  const {error} = await sb.from('stock_receptions').delete().eq('id', id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('receptionDetailModal').classList.remove('show');
+  showToast('✅ Réception annulée');
+  await refreshStockData();
+  await refreshCaisseData();
+});
+
+
+document.getElementById('recAddSupplierToggle').addEventListener('click', ()=>{
+  document.getElementById('recNewSupplierZone').classList.toggle('open');
+});
+
+document.getElementById('recNewSupplierConfirm').addEventListener('click', async ()=>{
+  const name = document.getElementById('recNewSupplierName').value.trim();
+  const phone = document.getElementById('recNewSupplierPhone').value.trim();
+  const soldeInitialInput = document.getElementById('recNewSupplierSoldeInitial').value;
+  const soldeInitial = soldeInitialInput!=='' ? Number(soldeInitialInput) : 0;
+  if(!name){ showToast('Entre un nom de fournisseur'); return; }
+  const row = { id:'sup_'+uid(), name, phone: phone||null, solde_initial: soldeInitial, created_at: Date.now() };
+  const {error} = await sb.from('stock_suppliers').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  SUPPLIERS.push(row);
+  fillSupplierSelect(document.getElementById('recSupplierSelect'), row.id);
+  document.getElementById('recNewSupplierName').value='';
+  document.getElementById('recNewSupplierPhone').value='';
+  document.getElementById('recNewSupplierSoldeInitial').value='';
+  document.getElementById('recNewSupplierZone').classList.remove('open');
+  showToast(`✅ Fournisseur "${name}" ajouté`);
+  updateRecDebtZone();
+});
+
+function updateRecDebtZone(){
+  const supplierId = document.getElementById('recSupplierSelect').value;
+  const zone = document.getElementById('recDebtZone');
+  if(!supplierId){ zone.style.display = 'none'; return; }
+  zone.style.display = 'block';
+  const solde = computeSupplierBalance(supplierId);
+  document.getElementById('recSoldePrecedent').textContent = fmt(solde) + ' دج';
+  recalcRecSolde();
+}
+function recalcRecSolde(){
+  const supplierId = document.getElementById('recSupplierSelect').value;
+  if(!supplierId) return;
+  const solde = computeSupplierBalance(supplierId);
+  const montant = Number(document.getElementById('recMontantMarchandise').value||0);
+  const versement = Number(document.getElementById('recVersement').value||0);
+  const nouveau = solde + montant - versement;
+  const el = document.getElementById('recSoldeNouveau');
+  el.textContent = fmt(nouveau) + ' دج';
+  el.style.color = nouveau>0?'var(--danger)':(nouveau<0?'#0369A1':'var(--brand-dark)');
+}
+document.getElementById('recSupplierSelect').addEventListener('change', updateRecDebtZone);
+document.getElementById('recMontantMarchandise').addEventListener('input', recalcRecSolde);
+document.getElementById('recVersement').addEventListener('input', recalcRecSolde);
+
+// Crée un versement fournisseur : ligne de relevé + sortie de caisse liée
+async function recordSupplierPayment({supplierId, supplierName, amount, receptionId, note}){
+  const caisseId = 'cai_'+uid();
+  const caisseRow = {
+    id:caisseId, type:'sortie', amount,
+    motif: `Versement fournisseur : ${supplierName}` + (receptionId?' (réception liée)':''),
+    motif_type:'versement_fournisseur', supplier_id:supplierId, reception_id:receptionId||null,
+    created_by:CURRENT_AGENT.name, created_at:Date.now(), updated_at:null
+  };
+  const {error: e1} = await sb.from('stock_caisse').insert(caisseRow);
+  if(e1) return {error:e1};
+  const ledgerRow = {
+    id:'ldg_'+uid(), supplier_id:supplierId, supplier_name:supplierName, type:'versement',
+    montant:amount, reception_id:receptionId||null, caisse_id:caisseId, note:note||null,
+    created_by:CURRENT_AGENT.name, created_at:Date.now()+1, updated_at:null
+  };
+  const {error: e2} = await sb.from('stock_supplier_ledger').insert(ledgerRow);
+  if(e2) return {error:e2};
+  return {success:true};
+}
+
+document.getElementById('saveReceptionBtn').addEventListener('click', async ()=>{
+  const pid = document.getElementById('recProductSelect').value;
+  const qty = parseInt(document.getElementById('recQty').value||'0',10);
+  if(!pid){ showToast('Choisis un produit'); return; }
+  if(!qty || qty<=0){ showToast('Quantité invalide'); return; }
+  const product = PRODUCTS.find(p=>p.id===pid);
+  const variantValue = document.getElementById('recVariantSelect')?.value || null;
+  const variantPurchase = getVariantPurchasePrice(product, variantValue);
+  const supplierId = document.getElementById('recSupplierSelect').value;
+  const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+  const bonRef = document.getElementById('recBonRef').value.trim();
+  const note = document.getElementById('recNote').value.trim();
+  const montantMarchandise = supplierId ? Number(document.getElementById('recMontantMarchandise').value||0) : null;
+  const versement = supplierId ? Number(document.getElementById('recVersement').value||0) : 0;
+  const receptionId = 'rec_'+uid();
+  const row = {
+    id:receptionId, product_id:pid, product_name:(product?.name||'')+(variantValue?` (${variantValue})`:''), qty,
+    purchase_price: variantPurchase!=null ? variantPurchase : (product?.purchasePrice ?? null),
+    variant: variantValue,
+    supplier_id: supplierId || null, supplier_name: supplier?.name || null,
+    montant_marchandise: montantMarchandise,
+    bon_reference: bonRef, note, agent_name: CURRENT_AGENT.name, created_at: Date.now()
+  };
+  const {error} = await sb.from('stock_receptions').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+
+  if(supplierId && montantMarchandise){
+    await sb.from('stock_supplier_ledger').insert({
+      id:'ldg_'+uid(), supplier_id:supplierId, supplier_name:supplier?.name||'', type:'reception',
+      montant:montantMarchandise, reception_id:receptionId, caisse_id:null, note:null,
+      created_by:CURRENT_AGENT.name, created_at:Date.now(), updated_at:null
+    });
+  }
+  if(supplierId && versement>0){
+    await recordSupplierPayment({ supplierId, supplierName:supplier?.name||'', amount:versement, receptionId, note:'Versement à la réception' });
+  }
+
+  document.getElementById('recQty').value=''; document.getElementById('recBonRef').value=''; document.getElementById('recNote').value='';
+  document.getElementById('recMontantMarchandise').value=''; document.getElementById('recVersement').value='';
+  document.getElementById('recDebtZone').style.display='none';
+  document.getElementById('recSupplierSelect').value='';
+  if(document.getElementById('recVariantSelect')) document.getElementById('recVariantSelect').value='';
+  showToast('✅ Réception enregistrée');
+  await refreshStockData();
+  await refreshCaisseData();
+});
+
+/* ============ RETOUR ============ */
+function renderReturnsList(){
+  const base = isCaisseAgent() ? STOCK_RETURNS : STOCK_RETURNS.filter(r=>r.agent_name===CURRENT_AGENT.name);
+  const fromStr = document.getElementById('retHistDateFrom')?.value;
+  const toStr = document.getElementById('retHistDateTo')?.value;
+  const list = base.filter(r=> inDateRange(Number(r.created_at), fromStr, toStr)).slice(0, isCaisseAgent()?80:30);
+  const el = document.getElementById('returnsList');
+  if(!list.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">📤</div>Aucun retour sur cette période</div>'; return; }
+  el.innerHTML = list.map(r=>`
+    <div class="card return-row" data-id="${r.id}" style="margin-bottom:9px;cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:13px;font-weight:700;">${r.product_name}</div>
+        <div style="font-size:13px;font-weight:800;color:#0369A1;">+${r.qty}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${r.noest_tracking?`🔖 ${r.noest_tracking} · `:''}${isCaisseAgent()?`👷 ${r.agent_name} · `:''}${new Date(Number(r.created_at)).toLocaleString('fr-FR')}</div>
+      ${r.note?`<div style="font-size:11.5px;color:var(--ink);margin-top:4px;">${r.note}</div>`:''}
+      <div style="font-size:10.5px;color:var(--brand-dark);font-weight:700;margin-top:6px;">👁️ Voir les détails</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.return-row').forEach(card=>{
+    card.addEventListener('click', ()=> openReturnDetail(card.dataset.id));
+  });
+}
+
+function openReturnDetail(id){
+  const r = STOCK_RETURNS.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('returnDetailBody').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">PRODUIT</div><div style="font-weight:700;">${r.product_name}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">QUANTITÉ</div><div style="font-weight:700;color:#0369A1;">+${r.qty}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">TRACKING NOEST</div><div>${r.noest_tracking||'—'}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">NOTE</div><div>${r.note||'—'}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">AGENT</div><div>👷 ${r.agent_name}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">DATE</div><div>${new Date(Number(r.created_at)).toLocaleString('fr-FR')}</div></div>
+    </div>
+  `;
+  document.getElementById('deleteReturnBtn').dataset.id = id;
+  document.getElementById('editReturnBtn').dataset.id = id;
+  document.getElementById('returnDetailView').style.display = 'block';
+  document.getElementById('returnDetailEdit').style.display = 'none';
+  document.getElementById('returnDetailModal').classList.add('show');
+}
+document.getElementById('closeReturnDetailModal').addEventListener('click', ()=>{
+  document.getElementById('returnDetailModal').classList.remove('show');
+});
+document.getElementById('editReturnBtn').addEventListener('click', ()=>{
+  const id = document.getElementById('editReturnBtn').dataset.id;
+  const r = STOCK_RETURNS.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('editRetQty').value = r.qty;
+  document.getElementById('editRetTracking').value = r.noest_tracking||'';
+  document.getElementById('editRetNote').value = r.note||'';
+  document.getElementById('returnDetailView').style.display = 'none';
+  document.getElementById('returnDetailEdit').style.display = 'block';
+  document.getElementById('saveReturnEditBtn').dataset.id = id;
+});
+document.getElementById('saveReturnEditBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('saveReturnEditBtn').dataset.id;
+  const qty = parseInt(document.getElementById('editRetQty').value||'0',10);
+  if(!qty || qty<=0){ showToast('Quantité invalide'); return; }
+  const tracking = document.getElementById('editRetTracking').value.trim();
+  const note = document.getElementById('editRetNote').value.trim();
+  const {error} = await sb.from('stock_returns').update({qty, noest_tracking: tracking||null, note}).eq('id', id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('returnDetailModal').classList.remove('show');
+  showToast('✅ Retour modifié');
+  await refreshStockData();
+});
+document.getElementById('deleteReturnBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('deleteReturnBtn').dataset.id;
+  if(!confirm('Annuler ce retour ? Le stock sera recalculé automatiquement.')) return;
+  const {error} = await sb.from('stock_returns').delete().eq('id', id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('returnDetailModal').classList.remove('show');
+  showToast('✅ Retour annulé');
+  await refreshStockData();
+});
+
+/* ============ IMPORT EN MASSE RETOURS (.txt) ============ */
+let PENDING_IMPORT_ITEMS = [];
+
+document.getElementById('retFilePickBtn').addEventListener('click', ()=>{
+  document.getElementById('retFileInput').click();
+});
+
+function findTrackingMatch(tr){
+  const trU = tr.trim().toUpperCase();
+  return ORDERS_LIGHT.find(o=>(o.noest_tracking||'').toUpperCase()===trU)
+      || CARTS_LIGHT.find(c=>(c.noest_tracking||'').toUpperCase()===trU)
+      || null;
+}
+function isTrackingAlreadyReturned(tr){
+  const trU = tr.trim().toUpperCase();
+  return STOCK_RETURNS.some(r=>(r.noest_tracking||'').toUpperCase()===trU);
+}
+// Décompose une commande (simple ou composée de plusieurs produits/variantes) en lignes individuelles
+// — indispensable pour que chaque produit ET sa variante précise soient bien recrédités au retour.
+function expandOrderToLines(found){
+  if(Array.isArray(found.order_items) && found.order_items.length){
+    return found.order_items.map(it=>({ productId: it.product_id, productName: it.product_name, qty: Number(it.qty||1), variant: it.variant||null }));
+  }
+  return [{ productId: found.product_id, productName: found.product_name, qty: Number(found.qty||1), variant: found.variant||null }];
+}
+
+document.getElementById('retFileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  document.getElementById('retFileName').style.display = 'block';
+  document.getElementById('retFileName').textContent = '📄 ' + file.name;
+
+  const text = await file.text();
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+
+  PENDING_IMPORT_ITEMS = [];
+  lines.forEach(tr=>{
+    const found = findTrackingMatch(tr);
+    const dup = found ? isTrackingAlreadyReturned(tr) : false;
+    if(!found){
+      PENDING_IMPORT_ITEMS.push({ tracking: tr, found:false, duplicate:false, productId:null, productName:null, orderId:null, qty:1, variant:null, checked:false });
+      return;
+    }
+    expandOrderToLines(found).forEach(line=>{
+      PENDING_IMPORT_ITEMS.push({
+        tracking: tr, found:true, duplicate:dup,
+        productId: line.productId, productName: line.productName+(line.variant?` (${line.variant})`:''),
+        orderId: found.id, qty: line.qty, variant: line.variant,
+        checked: !dup
+      });
+    });
+  });
+  renderImportPreview();
+  e.target.value = ''; // permet de réimporter le même fichier si besoin
+});
+
+function renderImportPreview(){
+  const zone = document.getElementById('retImportPreview');
+  const confirmBtn = document.getElementById('retConfirmImportBtn');
+  if(!PENDING_IMPORT_ITEMS.length){ zone.innerHTML=''; confirmBtn.style.display='none'; return; }
+
+  const foundCount = PENDING_IMPORT_ITEMS.filter(i=>i.found && !i.duplicate).length;
+  const dupCount = PENDING_IMPORT_ITEMS.filter(i=>i.duplicate).length;
+  const notFoundCount = PENDING_IMPORT_ITEMS.filter(i=>!i.found).length;
+
+  zone.innerHTML = `<div class="card" style="padding:10px 14px;">` +
+    PENDING_IMPORT_ITEMS.map((item,idx)=>{
+      if(!item.found){
+        // Ligne erronée — correction inline
+        return `<div class="import-row import-row-error">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <span style="font-size:16px;flex-shrink:0;">❌</span>
+            <div class="imp-mid">
+              <div class="imp-prod" style="color:var(--danger);">Tracking introuvable</div>
+              <div class="imp-track">${item.tracking}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;width:100%;margin-top:8px;">
+            <input type="text" class="imp-fix-input" data-idx="${idx}" value="${item.tracking}" placeholder="Corriger le tracking...">
+            <button class="btn btn-outline btn-sm imp-fix-btn" data-idx="${idx}">🔄 Revalider</button>
+          </div>
+          <button class="imp-manual-toggle" data-idx="${idx}">✏️ Ou choisir le produit manuellement</button>
+          <div class="imp-manual-zone" data-idx="${idx}">
+            <select class="imp-manual-select" data-idx="${idx}"></select>
+            <div style="display:flex;gap:6px;">
+              <input type="number" class="imp-manual-qty" data-idx="${idx}" min="1" value="1" placeholder="Qté">
+              <button class="btn btn-primary btn-sm imp-manual-confirm" data-idx="${idx}">✅ Valider</button>
+            </div>
+          </div>
+        </div>`;
+      }
+      let badge;
+      if(item.duplicate){ badge = '<span class="status-pill" style="background:var(--warn-light);color:var(--warn);">Déjà importé</span>'; }
+      else { badge = `<span class="status-pill" style="background:var(--brand-light);color:var(--brand-dark);">×${item.qty}${item.manual?' · manuel':''}</span>`; }
+      return `<div class="import-row">
+        <input type="checkbox" data-idx="${idx}" class="imp-check" ${item.checked?'checked':''} ${item.duplicate?'disabled':''}>
+        <div class="imp-mid">
+          <div class="imp-prod">${item.productName}</div>
+          <div class="imp-track">${item.tracking}</div>
+        </div>
+        ${badge}
+      </div>`;
+    }).join('') + `</div>
+    <div class="import-summary">✅ ${foundCount} trouvé(s) · ⚠️ ${dupCount} déjà importé(s) · ❌ ${notFoundCount} à corriger</div>`;
+
+  zone.querySelectorAll('.imp-check').forEach(cb=>{
+    cb.addEventListener('change', ()=>{ PENDING_IMPORT_ITEMS[cb.dataset.idx].checked = cb.checked; });
+  });
+
+  zone.querySelectorAll('.imp-fix-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = Number(btn.dataset.idx);
+      const input = zone.querySelector(`.imp-fix-input[data-idx="${idx}"]`);
+      const newVal = input.value.trim();
+      if(!newVal){ showToast('Entre un tracking'); return; }
+      const found = findTrackingMatch(newVal);
+      if(found){
+        const dup = isTrackingAlreadyReturned(newVal);
+        const newLines = expandOrderToLines(found).map(line=>({
+          tracking: newVal, found:true, duplicate:dup,
+          productId: line.productId, productName: line.productName+(line.variant?` (${line.variant})`:''),
+          orderId: found.id, qty: line.qty, variant: line.variant,
+          checked: !dup
+        }));
+        PENDING_IMPORT_ITEMS.splice(idx, 1, ...newLines);
+        showToast(dup ? '⚠️ Déjà importé' : `✅ Trouvé : ${newLines.length} produit(s)`);
+      } else {
+        PENDING_IMPORT_ITEMS[idx].tracking = newVal;
+        showToast('Toujours introuvable');
+      }
+      renderImportPreview();
+    });
+  });
+
+  zone.querySelectorAll('.imp-manual-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = btn.dataset.idx;
+      const z = zone.querySelector(`.imp-manual-zone[data-idx="${idx}"]`);
+      const open = z.classList.contains('open');
+      z.classList.toggle('open', !open);
+      if(!open){ fillProductSelect(z.querySelector('.imp-manual-select')); }
+    });
+  });
+
+  zone.querySelectorAll('.imp-manual-confirm').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = btn.dataset.idx;
+      const sel = zone.querySelector(`.imp-manual-select[data-idx="${idx}"]`);
+      const qtyInput = zone.querySelector(`.imp-manual-qty[data-idx="${idx}"]`);
+      const pid = sel.value;
+      const qty = parseInt(qtyInput.value||'0',10);
+      if(!pid){ showToast('Choisis un produit'); return; }
+      if(!qty || qty<=0){ showToast('Quantité invalide'); return; }
+      const product = PRODUCTS.find(p=>p.id===pid);
+      const item = PENDING_IMPORT_ITEMS[idx];
+      item.found = true; item.duplicate = false; item.manual = true;
+      item.productId = pid; item.productName = product?.name||''; item.qty = qty; item.orderId = null;
+      item.checked = true;
+      showToast(`✅ ${product?.name} × ${qty} ajouté`);
+      renderImportPreview();
+    });
+  });
+
+  confirmBtn.style.display = foundCount>0 ? 'block' : 'none';
+  confirmBtn.textContent = `✅ Confirmer l'import (${foundCount})`;
+}
+
+document.getElementById('retConfirmImportBtn').addEventListener('click', async ()=>{
+  const toImport = PENDING_IMPORT_ITEMS.filter(i=>i.checked && i.found && !i.duplicate);
+  if(!toImport.length){ showToast('Rien à importer'); return; }
+  const rows = toImport.map(i=>({
+    id:'ret_'+uid(), product_id:i.productId, product_name:i.productName, qty:i.qty,
+    variant:i.variant||null,
+    order_id:i.orderId, noest_tracking:i.tracking, note:'Import fichier .txt',
+    agent_name:CURRENT_AGENT.name, created_at:Date.now()
+  }));
+  const {error} = await sb.from('stock_returns').insert(rows);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  showToast(`✅ ${rows.length} retour(s) importé(s)`);
+  PENDING_IMPORT_ITEMS = [];
+  document.getElementById('retImportPreview').innerHTML = '';
+  document.getElementById('retConfirmImportBtn').style.display = 'none';
+  document.getElementById('retFileName').style.display = 'none';
+  await refreshStockData();
+});
+
+/* ============ LIVRÉ MANUEL (hors société de livraison) ============ */
+let _mdFoundEntity = null; // {type:'order'|'abandoned_cart', id, name, phone, productName}
+
+async function mdLookupTracking(){
+  const tr = document.getElementById('mdTrackingInput').value.trim();
+  const infoZone = document.getElementById('mdFoundInfo');
+  const validateBtn = document.getElementById('mdValidateBtn');
+  if(!tr){ showToast('Entre un numéro de tracking'); return; }
+  infoZone.style.display = 'none';
+  validateBtn.style.display = 'none';
+  _mdFoundEntity = null;
+
+  let { data: orderRow } = await sb.from('orders')
+    .select('id,name,phone,product_name,status,noest_status')
+    .eq('noest_tracking', tr).maybeSingle();
+  let entityType = 'order';
+  let row = orderRow;
+  if(!row){
+    const { data: cartRow } = await sb.from('abandoned_carts')
+      .select('id,name,phone,product_name,status,noest_status')
+      .eq('noest_tracking', tr).maybeSingle();
+    row = cartRow;
+    entityType = 'abandoned_cart';
+  }
+  if(!row){ showToast('Aucune commande trouvée avec ce tracking'); return; }
+
+  _mdFoundEntity = { type: entityType, id: row.id, name: row.name, phone: row.phone, productName: row.product_name, tracking: tr };
+  document.getElementById('mdFoundName').textContent = row.name || '(nom vide)';
+  document.getElementById('mdFoundPhone').textContent = row.phone || '(téléphone vide)';
+  document.getElementById('mdFoundProduct').textContent = row.product_name || '';
+  infoZone.style.display = 'block';
+  validateBtn.style.display = 'block';
+}
+
+document.getElementById('mdLookupBtn').addEventListener('click', mdLookupTracking);
+
+document.getElementById('mdValidateBtn').addEventListener('click', async ()=>{
+  if(!_mdFoundEntity) return;
+  const table = _mdFoundEntity.type === 'order' ? 'orders' : 'abandoned_carts';
+  const DELIVERED_STATUS_VALUE = 'Livré';
+
+  const { error } = await sb.from(table)
+    .update({ status: 'confirmed', noest_status: DELIVERED_STATUS_VALUE })
+    .eq('id', _mdFoundEntity.id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+
+  const logRow = {
+    id: 'mdel_'+uid(),
+    entity_type: _mdFoundEntity.type,
+    entity_id: _mdFoundEntity.id,
+    noest_tracking: _mdFoundEntity.tracking,
+    customer_name: _mdFoundEntity.name,
+    customer_phone: _mdFoundEntity.phone,
+    agent_name: CURRENT_AGENT.name,
+    created_at: Date.now()
+  };
+  const { error: logError } = await sb.from('stock_manual_deliveries').insert(logRow);
+  if(logError) console.error('log manual delivery:', logError.message);
+
+  showToast(`✅ ${_mdFoundEntity.name} marquée comme livrée`);
+  document.getElementById('mdAddAnotherBtn').style.display = 'block';
+  document.getElementById('mdValidateBtn').style.display = 'none';
+  await refreshStockData();
+  await mdRenderHistory();
+});
+
+document.getElementById('mdAddAnotherBtn').addEventListener('click', ()=>{
+  document.getElementById('mdTrackingInput').value = '';
+  document.getElementById('mdFoundInfo').style.display = 'none';
+  document.getElementById('mdAddAnotherBtn').style.display = 'none';
+  _mdFoundEntity = null;
+  document.getElementById('mdTrackingInput').focus();
+});
+
+async function mdRenderHistory(){
+  const zone = document.getElementById('mdHistoryList');
+  if(!zone) return;
+  const { data, error } = await sb.from('stock_manual_deliveries')
+    .select('*').order('created_at', { ascending: false }).limit(100);
+  if(error){ console.error('mdRenderHistory:', error.message); return; }
+  if(!data || !data.length){
+    zone.innerHTML = '<div class="empty-state"><div class="e-icon">🏍️</div>Aucune livraison manuelle enregistrée</div>';
+    return;
+  }
+  zone.innerHTML = data.map(d => `
+    <div style="background:var(--card);border-radius:12px;border:1.5px solid var(--line);padding:10px 12px;margin-bottom:8px;">
+      <div style="font-weight:700;font-size:13.5px;">${d.customer_name||'(nom vide)'}</div>
+      <div style="font-size:12.5px;color:var(--muted);">${d.customer_phone||''} · Tracking : ${d.noest_tracking}</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:3px;">👤 ${d.agent_name} · 🕐 ${new Date(Number(d.created_at)).toLocaleString('fr-FR')}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('mdTrackingInput').addEventListener('keypress', (e)=>{
+  if(e.key === 'Enter') mdLookupTracking();
+});
+
+
+
+document.getElementById('retLookupBtn').addEventListener('click', async ()=>{
+  const tr = document.getElementById('retTrackingLookup').value.trim();
+  const otherZone = document.getElementById('retOtherProducts');
+  if(!tr){ showToast('Entre un numéro de tracking'); return; }
+  const { data: mdCheck } = await sb.from('stock_manual_deliveries').select('id').eq('noest_tracking', tr).limit(1);
+  if(mdCheck && mdCheck.length){ alert('Tracking déjà existant avec statut livré'); document.getElementById('retTrackingLookup').value=''; otherZone.innerHTML=''; return; }
+  const found = ORDERS_LIGHT.find(o=>o.noest_tracking===tr) || CARTS_LIGHT.find(c=>c.noest_tracking===tr);
+  if(!found){ showToast('Aucune commande trouvée avec ce tracking'); otherZone.innerHTML=''; return; }
+  const foundLines = expandOrderToLines(found);
+  // Pré-remplit avec le premier produit (et sa variante si elle en a une)
+  const first = foundLines[0];
+  const sel = document.getElementById('retProductSelect');
+  if(first.productId) sel.value = first.productId;
+  document.getElementById('retQty').value = first.qty;
+  const product = PRODUCTS.find(p=>p.id===first.productId);
+  const varWrap = document.getElementById('retVariantWrap');
+  const varSel = document.getElementById('retVariantSelect');
+  if(product && product.variants?.length && varWrap && varSel){
+    varWrap.style.display = 'block';
+    varSel.innerHTML = product.variants.map(v=>`<optgroup label="${v.name}">${(v.options||[]).map(o=>`<option value="${o.value}" ${o.value===first.variant?'selected':''}>${o.value}</option>`).join('')}</optgroup>`).join('');
+  } else if(varWrap){
+    varWrap.style.display = 'none';
+    if(varSel) varSel.innerHTML = '';
+  }
+  // Les autres produits de la commande (le cas échéant) : ajout direct en un clic, sans passer par le formulaire principal
+  const rest = foundLines.slice(1);
+  if(rest.length){
+    otherZone.innerHTML = `<div style="font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;">Autres produits de cette commande :</div>` +
+      rest.map((l,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:9px;padding:8px 10px;margin-bottom:6px;font-size:13px;">
+        <span>${l.productName}${l.variant?` (${l.variant})`:''} × ${l.qty}</span>
+        <button type="button" class="btn btn-sm ret-quickadd-btn" data-idx="${i}" style="background:var(--brand-light);color:var(--brand-dark);font-weight:700;">➕ Ajouter au retour</button>
+      </div>`).join('');
+    otherZone.querySelectorAll('.ret-quickadd-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const line = rest[Number(btn.dataset.idx)];
+        const row = {
+          id:'ret_'+uid(), product_id:line.productId, product_name:line.productName+(line.variant?` (${line.variant})`:''), qty:line.qty,
+          variant: line.variant, order_id: found.id, noest_tracking: tr,
+          note: document.getElementById('retNote').value.trim(), agent_name: CURRENT_AGENT.name, created_at:Date.now()
+        };
+        const {error} = await sb.from('stock_returns').insert(row);
+        if(error){ showToast('Erreur: '+error.message); return; }
+        showToast(`✅ ${line.productName} ajouté au retour`);
+        btn.disabled = true; btn.textContent = '✅ Ajouté';
+        renderStockList();
+      });
+    });
+    showToast(`⚠️ Commande à ${foundLines.length} produits — le premier est pré-rempli, ajoute les autres ci-dessous`);
+  } else {
+    otherZone.innerHTML = '';
+    showToast(`Trouvé : ${first.productName}${first.variant?` (${first.variant})`:''} × ${first.qty}`);
+  }
+});
+
+document.getElementById('saveReturnBtn').addEventListener('click', async ()=>{
+  const pid = document.getElementById('retProductSelect').value;
+  const qty = parseInt(document.getElementById('retQty').value||'0',10);
+  if(!pid){ showToast('Choisis un produit'); return; }
+  if(!qty || qty<=0){ showToast('Quantité invalide'); return; }
+  const product = PRODUCTS.find(p=>p.id===pid);
+  const variantValue = document.getElementById('retVariantSelect')?.value || null;
+  const tr = document.getElementById('retTrackingLookup').value.trim();
+  if(tr){
+    const { data: mdCheck2 } = await sb.from('stock_manual_deliveries').select('id').eq('noest_tracking', tr).limit(1);
+    if(mdCheck2 && mdCheck2.length){ alert('Tracking déjà existant avec statut livré'); return; }
+  }
+  const found = tr ? (ORDERS_LIGHT.find(o=>o.noest_tracking===tr) || CARTS_LIGHT.find(c=>c.noest_tracking===tr)) : null;
+  const row = {
+    id:'ret_'+uid(), product_id:pid, product_name:(product?.name||'')+(variantValue?` (${variantValue})`:''), qty,
+    variant: variantValue, order_id: found ? found.id : null, noest_tracking: tr,
+    note: document.getElementById('retNote').value.trim(), agent_name: CURRENT_AGENT.name, created_at: Date.now()
+  };
+  const {error} = await sb.from('stock_returns').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('retQty').value=''; document.getElementById('retNote').value=''; document.getElementById('retTrackingLookup').value='';
+  if(document.getElementById('retVariantSelect')) document.getElementById('retVariantSelect').value='';
+  if(document.getElementById('retOtherProducts')) document.getElementById('retOtherProducts').innerHTML='';
+  showToast('✅ Retour enregistré');
+  await refreshStockData();
+});
+
+/* ============ HISTORIQUE ============ */
+function renderHistorique(){
+  const movements = [
+    ...STOCK_RECEPTIONS.map(r=>({type:'reception', ...r})),
+    ...STOCK_RETURNS.map(r=>({type:'retour', ...r})),
+    ...STOCK_ADJUSTMENTS.map(a=>({type:'ajustement', ...a}))
+  ].sort((a,b)=> Number(b.created_at)-Number(a.created_at)).slice(0,60);
+  const el = document.getElementById('historiqueList');
+  if(!movements.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">🕒</div>Aucun mouvement</div>'; return; }
+  const icons = {reception:'📥', retour:'📤', ajustement:'🛠️'};
+  el.innerHTML = movements.map(m=>`
+    <div class="card" style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:13px;font-weight:700;">${icons[m.type]} ${m.product_name}</div>
+        <div style="font-size:13px;font-weight:800;color:${m.qty>=0?'var(--brand-dark)':'var(--danger)'};">${m.qty>=0?'+':''}${m.qty}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${m.agent_name||'Admin'} · ${new Date(Number(m.created_at)).toLocaleString('fr-FR')}</div>
+    </div>
+  `).join('');
+}
+
+/* ============ CAISSE (madjid + admin) ============ */
+function isCaisseAgent(){
+  return !!(CURRENT_AGENT && CURRENT_AGENT.is_admin);
+}
+
+async function loadCaisse(){
+  const {data,error} = await sb.from('stock_caisse').select('*').order('created_at',{ascending:false}).limit(300);
+  if(error){ console.error('loadCaisse:',error.message); return []; }
+  return data||[];
+}
+async function loadComptages(){
+  const {data,error} = await sb.from('stock_caisse_comptages').select('*').order('created_at',{ascending:false}).limit(100);
+  if(error){ console.error('loadComptages:',error.message); return []; }
+  return data||[];
+}
+
+function computeCaisseTotals(fromStr, toStr){
+  let totalEntrees=0, totalSorties=0;
+  STOCK_CAISSE.forEach(c=>{
+    if((fromStr||toStr) && !inDateRange(Number(c.created_at), fromStr, toStr)) return;
+    if(c.type==='entree') totalEntrees += Math.round(Number(c.amount||0)*100);
+    else totalSorties += Math.round(Number(c.amount||0)*100);
+  });
+  totalEntrees = Math.round(totalEntrees)/100;
+  totalSorties = Math.round(totalSorties)/100;
+  return { totalEntrees, totalSorties, solde: Math.round((totalEntrees - totalSorties)*100)/100 };
+}
+
+function renderCaisseView(){
+  if(!isCaisseAgent()){
+    document.getElementById('view-caisse').innerHTML = `<div class="empty-state"><div class="e-icon">🔒</div>Accès réservé</div>`;
+    return;
+  }
+  const fromStr = document.getElementById('caisseKpiDateFrom')?.value;
+  const toStr = document.getElementById('caisseKpiDateTo')?.value;
+  const { totalEntrees, totalSorties } = computeCaisseTotals(fromStr, toStr);
+  const { solde } = computeCaisseTotals(); // solde théorique = toujours calculé sur tout l'historique
+  document.getElementById('caisseKpiRow').innerHTML = `
+    <div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">📥 TOTAL ENTRÉES</div><div style="font-size:17px;font-weight:900;color:var(--brand-dark);">${fmt(totalEntrees)} دج</div></div>
+    <div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">📤 TOTAL SORTIES</div><div style="font-size:17px;font-weight:900;color:var(--danger);">${fmt(totalSorties)} دج</div></div>
+    <div class="card" style="grid-column:1/-1;"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">💰 SOLDE THÉORIQUE (CAISSE VIRTUELLE)</div><div style="font-size:22px;font-weight:900;">${fmt(solde)} دج</div></div>
+  `;
+  renderCaisseList();
+  renderComptagesList();
+}
+
+function renderCaisseList(){
+  const el = document.getElementById('caisseList');
+  const fromStr = document.getElementById('caisseHistDateFrom')?.value;
+  const toStr = document.getElementById('caisseHistDateTo')?.value;
+  const filtered = STOCK_CAISSE.filter(c=> inDateRange(Number(c.created_at), fromStr, toStr));
+  if(!filtered.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">💰</div>Aucun mouvement sur cette période</div>'; return; }
+  el.innerHTML = filtered.slice(0,60).map(c=>`
+    <div class="card caisse-row" data-id="${c.id}" style="margin-bottom:9px;cursor:pointer;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:13px;font-weight:700;">${c.type==='entree'?'📥':'📤'} ${c.motif||'(sans motif)'}</div>
+        <div style="font-size:13px;font-weight:800;color:${c.type==='entree'?'var(--brand-dark)':'var(--danger)'};">${c.type==='entree'?'+':'-'}${fmt(c.amount)}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${new Date(Number(c.created_at)).toLocaleString('fr-FR')}${c.updated_at?' · modifié':''}</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.caisse-row').forEach(card=>{
+    card.addEventListener('click', ()=> openCaisseDetail(card.dataset.id));
+  });
+}
+
+function renderComptagesList(){
+  const el = document.getElementById('comptagesList');
+  if(!STOCK_COMPTAGES.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">🧮</div>Aucun comptage enregistré</div>'; return; }
+  el.innerHTML = STOCK_COMPTAGES.slice(0,30).map(c=>{
+    const ecart = Number(c.ecart||0);
+    const ok = Math.abs(ecart) < 0.01;
+    return `<div class="card" style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:12.5px;color:var(--muted);">${new Date(Number(c.created_at)).toLocaleString('fr-FR')}</div>
+        <div style="font-size:12.5px;font-weight:800;color:${ok?'var(--brand-dark)':'var(--danger)'};">${ok?'✅ Exact':(ecart>0?'⬆️ +'+fmt(ecart):'⬇️ '+fmt(ecart))+' دج'}</div>
+      </div>
+      <div style="font-size:12px;margin-top:4px;">Réel: <b>${fmt(c.amount_reel)} دج</b> · Théorique: <b>${fmt(c.solde_theorique)} دج</b></div>
+    </div>`;
+  }).join('');
+}
+
+/* ============ FOURNISSEURS (dettes) ============ */
+function renderFournisseursView(){
+  if(!isCaisseAgent()) return;
+  const kpiEl = document.getElementById('fournisseursKpi');
+  const listEl = document.getElementById('fournisseursList');
+  if(!kpiEl || !listEl) return;
+
+  const rows = SUPPLIERS.map(s=>({ supplier:s, balance: computeSupplierBalance(s.id) }))
+    .sort((a,b)=> b.balance - a.balance);
+  const totalDette = rows.reduce((sum,r)=> sum + Math.max(r.balance,0), 0);
+
+  kpiEl.innerHTML = `<div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">💳 TOTAL DÛ AUX FOURNISSEURS</div><div style="font-size:20px;font-weight:900;color:var(--danger);">${fmt(totalDette)} دج</div></div>`;
+
+  if(!rows.length){ listEl.innerHTML = '<div class="empty-state"><div class="e-icon">🏭</div>Aucun fournisseur</div>'; return; }
+  listEl.innerHTML = rows.map(({supplier,balance})=>`
+    <div class="card supplier-row" data-id="${supplier.id}" style="margin-bottom:9px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <div>
+        <div style="font-size:13.5px;font-weight:700;">${supplier.name}</div>
+        ${supplier.phone?`<div style="font-size:11px;color:var(--muted);margin-top:2px;">📞 ${supplier.phone}</div>`:''}
+      </div>
+      <div style="font-size:15px;font-weight:900;color:${balance>0?'var(--danger)':(balance<0?'#0369A1':'var(--brand-dark)')};">${fmt(balance)} دج</div>
+    </div>
+  `).join('');
+  listEl.querySelectorAll('.supplier-row').forEach(card=>{
+    card.addEventListener('click', ()=> openSupplierLedger(card.dataset.id));
+  });
+}
+
+function openSupplierLedger(supplierId){
+  const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+  if(!supplier) return;
+  const { rows, balance } = computeSupplierStatement(supplierId);
+  document.getElementById('supplierLedgerTitle').textContent = '🏭 ' + supplier.name;
+  document.getElementById('supplierLedgerSolde').innerHTML = `
+    <div style="font-size:11px;color:var(--muted);font-weight:700;">SOLDE ACTUEL</div>
+    <div style="font-size:24px;font-weight:900;color:${balance>0?'var(--danger)':(balance<0?'#0369A1':'var(--brand-dark)')};">${fmt(balance)} دج</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px;">${balance>0?'Vous devez au fournisseur':(balance<0?'Le fournisseur vous doit (avoir)':'Compte à jour')}</div>
+  `;
+  document.getElementById('openVersementBtn').dataset.supplierId = supplierId;
+  document.getElementById('supplierLedgerVersementForm').style.display = 'none';
+  document.getElementById('versementAmount').value = '';
+  document.getElementById('versementNote').value = '';
+  document.getElementById('soldeInitialEditZone').classList.remove('open');
+  document.getElementById('editSoldeInitial').value = supplier.solde_initial ?? 0;
+  document.getElementById('saveSoldeInitialBtn').dataset.supplierId = supplierId;
+
+  const listEl = document.getElementById('supplierLedgerList');
+  if(!rows.length){ listEl.innerHTML = '<div class="empty-state"><div class="e-icon">📋</div>Aucun mouvement</div>'; }
+  else {
+    listEl.innerHTML = rows.map(l=>`
+      <div class="card" style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;gap:8px;">
+          <div style="font-size:12.5px;font-weight:700;">${l.type==='reception'?'📥 Marchandise':'💵 Versement'}</div>
+          <div style="font-size:13px;font-weight:800;color:${l.type==='reception'?'var(--danger)':'var(--brand-dark)'};">${l.type==='reception'?'+':'-'}${fmt(l.montant)} دج</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${fmt(l.solde_precedent)} → ${fmt(l.solde_apres)} دج · ${new Date(Number(l.created_at)).toLocaleString('fr-FR')}</div>
+        ${l.note?`<div style="font-size:11.5px;color:var(--ink);margin-top:4px;">${l.note}</div>`:''}
+        ${!l.reception_id?`<button class="btn btn-sm btn-outline delete-ledger-btn" data-id="${l.id}" data-caisse="${l.caisse_id||''}" style="margin-top:8px;color:var(--danger);">🗑️ Supprimer</button>`:'<div style="font-size:10px;color:var(--muted);margin-top:4px;">🔗 lié à une réception</div>'}
+      </div>
+    `).join('');
+    listEl.querySelectorAll('.delete-ledger-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('Supprimer ce mouvement de dette ?')) return;
+        if(btn.dataset.caisse) await sb.from('stock_caisse').delete().eq('id', btn.dataset.caisse);
+        await sb.from('stock_supplier_ledger').delete().eq('id', btn.dataset.id);
+        showToast('✅ Mouvement supprimé');
+        await refreshCaisseData();
+        openSupplierLedger(supplierId);
+      });
+    });
+  }
+  document.getElementById('supplierLedgerModal').classList.add('show');
+}
+document.getElementById('closeSupplierLedgerModal').addEventListener('click', ()=>{
+  document.getElementById('supplierLedgerModal').classList.remove('show');
+});
+document.getElementById('toggleSoldeInitialBtn').addEventListener('click', ()=>{
+  document.getElementById('soldeInitialEditZone').classList.toggle('open');
+});
+document.getElementById('saveSoldeInitialBtn').addEventListener('click', async ()=>{
+  const supplierId = document.getElementById('saveSoldeInitialBtn').dataset.supplierId;
+  const val = document.getElementById('editSoldeInitial').value;
+  const soldeInitial = val!=='' ? Number(val) : 0;
+  const {error} = await sb.from('stock_suppliers').update({solde_initial:soldeInitial}).eq('id', supplierId);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+  if(supplier) supplier.solde_initial = soldeInitial;
+  showToast('✅ Solde d\'ouverture enregistré');
+  document.getElementById('soldeInitialEditZone').classList.remove('open');
+  await refreshCaisseData();
+  openSupplierLedger(supplierId);
+});
+document.getElementById('openVersementBtn').addEventListener('click', ()=>{
+  const form = document.getElementById('supplierLedgerVersementForm');
+  form.style.display = form.style.display==='none' ? 'block' : 'none';
+});
+document.getElementById('confirmVersementBtn').addEventListener('click', async ()=>{
+  const supplierId = document.getElementById('openVersementBtn').dataset.supplierId;
+  const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+  const amount = parseFloat(document.getElementById('versementAmount').value||'0');
+  if(!amount || amount<=0){ showToast('Montant invalide'); return; }
+  const note = document.getElementById('versementNote').value.trim();
+  const {error} = await recordSupplierPayment({ supplierId, supplierName:supplier?.name||'', amount, receptionId:null, note: note||'Versement manuel' });
+  if(error){ showToast('Erreur: '+error.message); return; }
+  showToast('✅ Versement enregistré');
+  await refreshCaisseData();
+  openSupplierLedger(supplierId);
+});
+
+// Toggle type entrée/sortie
+document.getElementById('caisseTypeEntree').addEventListener('click', ()=>{
+  caisseTypeSelected = 'entree';
+  document.getElementById('caisseTypeEntree').classList.add('active');
+  document.getElementById('caisseTypeSortie').classList.remove('active');
+  document.getElementById('caisseMotifTypeField').style.display = 'none';
+  document.getElementById('caisseSupplierField').style.display = 'none';
+  document.getElementById('caisseReceptionField').style.display = 'none';
+  document.getElementById('caisseMotifField').style.display = 'block';
+});
+document.getElementById('caisseTypeSortie').addEventListener('click', ()=>{
+  caisseTypeSelected = 'sortie';
+  document.getElementById('caisseTypeSortie').classList.add('active');
+  document.getElementById('caisseTypeEntree').classList.remove('active');
+  document.getElementById('caisseMotifTypeField').style.display = 'block';
+  fillSupplierSelect(document.getElementById('caisseSupplierSelect'));
+  updateCaisseMotifType();
+});
+
+function updateCaisseMotifType(){
+  const isVersement = document.getElementById('caisseMotifType').value === 'versement_fournisseur';
+  document.getElementById('caisseSupplierField').style.display = isVersement ? 'block' : 'none';
+  document.getElementById('caisseReceptionField').style.display = isVersement ? 'block' : 'none';
+  document.getElementById('caisseMotifField').style.display = isVersement ? 'none' : 'block';
+  if(isVersement) updateCaisseReceptionOptions();
+}
+function updateCaisseReceptionOptions(){
+  const supplierId = document.getElementById('caisseSupplierSelect').value;
+  const sel = document.getElementById('caisseReceptionSelect');
+  const recs = STOCK_RECEPTIONS.filter(r=>r.supplier_id===supplierId).slice(0,20);
+  sel.innerHTML = '<option value="">— Aucune (réduction de dette générale) —</option>' +
+    recs.map(r=>`<option value="${r.id}">${r.product_name} · ${fmt(r.montant_marchandise||0)} دج · ${new Date(Number(r.created_at)).toLocaleDateString('fr-FR')}</option>`).join('');
+}
+document.getElementById('caisseMotifType').addEventListener('change', updateCaisseMotifType);
+document.getElementById('caisseSupplierSelect').addEventListener('change', updateCaisseReceptionOptions);
+
+document.getElementById('saveCaisseBtn').addEventListener('click', async ()=>{
+  const amount = parseFloat(document.getElementById('caisseAmount').value||'0');
+  if(!amount || amount<=0){ showToast('Montant invalide'); return; }
+
+  const isVersement = caisseTypeSelected==='sortie' && document.getElementById('caisseMotifType').value==='versement_fournisseur';
+  if(isVersement){
+    const supplierId = document.getElementById('caisseSupplierSelect').value;
+    if(!supplierId){ showToast('Choisis un fournisseur'); return; }
+    const supplier = SUPPLIERS.find(s=>s.id===supplierId);
+    const receptionId = document.getElementById('caisseReceptionSelect').value || null;
+    const {error} = await recordSupplierPayment({ supplierId, supplierName:supplier?.name||'', amount, receptionId, note:null });
+    if(error){ showToast('Erreur: '+error.message); return; }
+    document.getElementById('caisseAmount').value='';
+    document.getElementById('caisseReceptionSelect').value='';
+    showToast('✅ Versement enregistré');
+    await refreshCaisseData();
+    await refreshStockData();
+    return;
+  }
+
+  const motif = document.getElementById('caisseMotif').value.trim();
+  if(!motif){ showToast('Le motif est obligatoire'); return; }
+  const row = {
+    id:'cai_'+uid(), type:caisseTypeSelected, amount, motif, motif_type:'general',
+    created_by: CURRENT_AGENT.name, created_at: Date.now(), updated_at: null
+  };
+  const {error} = await sb.from('stock_caisse').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('caisseAmount').value=''; document.getElementById('caisseMotif').value='';
+  showToast('✅ Mouvement enregistré');
+  await refreshCaisseData();
+});
+
+// Comptage physique
+document.getElementById('compareComptageBtn').addEventListener('click', ()=>{
+  const amountReel = parseFloat(document.getElementById('comptageAmount').value||'');
+  if(isNaN(amountReel)){ showToast('Entre le montant compté'); return; }
+  const { solde } = computeCaisseTotals();
+  const ecart = amountReel - solde;
+  const ok = Math.abs(ecart) < 0.01;
+  const box = document.getElementById('comptageResult');
+  box.style.display = 'block';
+  box.style.background = ok ? 'var(--brand-light)' : 'var(--danger-light)';
+  box.style.color = ok ? 'var(--brand-dark)' : 'var(--danger)';
+  box.textContent = ok
+    ? `✅ La caisse est exacte (${fmt(solde)} دج)`
+    : `⚠️ Écart de ${ecart>0?'+':''}${fmt(ecart)} دج (théorique: ${fmt(solde)} دج · réel: ${fmt(amountReel)} دج)`;
+  document.getElementById('saveComptageBtn').style.display = 'block';
+  document.getElementById('saveComptageBtn').dataset.reel = amountReel;
+  document.getElementById('saveComptageBtn').dataset.theo = solde;
+  document.getElementById('saveComptageBtn').dataset.ecart = ecart;
+});
+
+document.getElementById('saveComptageBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('saveComptageBtn');
+  const row = {
+    id:'cpt_'+uid(),
+    amount_reel: Number(btn.dataset.reel), solde_theorique: Number(btn.dataset.theo), ecart: Number(btn.dataset.ecart),
+    created_by: CURRENT_AGENT.name, created_at: Date.now()
+  };
+  const {error} = await sb.from('stock_caisse_comptages').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('comptageAmount').value='';
+  document.getElementById('comptageResult').style.display='none';
+  btn.style.display='none';
+  showToast('✅ Comptage enregistré');
+  await refreshCaisseData();
+});
+
+// Modal détails / modification d'un mouvement
+function openCaisseDetail(id){
+  const c = STOCK_CAISSE.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('caisseDetailTitle').textContent = c.type==='entree' ? '📥 Entrée de caisse' : '📤 Sortie de caisse';
+  document.getElementById('caisseDetailBody').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">MONTANT</div><div style="font-weight:800;font-size:16px;color:${c.type==='entree'?'var(--brand-dark)':'var(--danger)'};">${c.type==='entree'?'+':'-'}${fmt(c.amount)} دج</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">MOTIF</div><div>${c.motif||'—'}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">SAISI PAR</div><div>👷 ${c.created_by}</div></div>
+      <div><div style="color:var(--muted);font-size:11px;font-weight:700;">DATE</div><div>${new Date(Number(c.created_at)).toLocaleString('fr-FR')}</div></div>
+      ${c.updated_at?`<div><div style="color:var(--muted);font-size:11px;font-weight:700;">MODIFIÉ LE</div><div>${new Date(Number(c.updated_at)).toLocaleString('fr-FR')}</div></div>`:''}
+    </div>
+  `;
+  document.getElementById('caisseDetailView').style.display = 'block';
+  document.getElementById('caisseDetailEdit').style.display = 'none';
+  document.getElementById('editCaisseBtn').dataset.id = id;
+  document.getElementById('deleteCaisseBtn').dataset.id = id;
+  document.getElementById('caisseDetailModal').classList.add('show');
+}
+document.getElementById('closeCaisseDetailModal').addEventListener('click', ()=>{
+  document.getElementById('caisseDetailModal').classList.remove('show');
+});
+document.getElementById('editCaisseBtn').addEventListener('click', ()=>{
+  const id = document.getElementById('editCaisseBtn').dataset.id;
+  const c = STOCK_CAISSE.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('editCaisseAmount').value = c.amount;
+  document.getElementById('editCaisseMotif').value = c.motif||'';
+  document.getElementById('caisseDetailView').style.display = 'none';
+  document.getElementById('caisseDetailEdit').style.display = 'block';
+  document.getElementById('saveCaisseEditBtn').dataset.id = id;
+});
+document.getElementById('saveCaisseEditBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('saveCaisseEditBtn').dataset.id;
+  const amount = parseFloat(document.getElementById('editCaisseAmount').value||'0');
+  const motif = document.getElementById('editCaisseMotif').value.trim();
+  if(!amount || amount<=0){ showToast('Montant invalide'); return; }
+  if(!motif){ showToast('Le motif est obligatoire'); return; }
+  const {error} = await sb.from('stock_caisse').update({amount, motif, updated_at:Date.now()}).eq('id', id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('caisseDetailModal').classList.remove('show');
+  showToast('✅ Mouvement modifié');
+  await refreshCaisseData();
+});
+document.getElementById('deleteCaisseBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('deleteCaisseBtn').dataset.id;
+  if(!confirm('Supprimer ce mouvement de caisse ?')) return;
+  const {error} = await sb.from('stock_caisse').delete().eq('id', id);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  document.getElementById('caisseDetailModal').classList.remove('show');
+  showToast('✅ Mouvement supprimé');
+  await refreshCaisseData();
+});
+
+async function refreshCaisseData(){
+  if(!isCaisseAgent()) return;
+  [STOCK_CAISSE, STOCK_COMPTAGES, SUPPLIER_LEDGER] = await Promise.all([loadCaisse(), loadComptages(), loadSupplierLedger()]);
+  if(!caisseDateFilterInit){
+    applyQuickPeriod('month','caisseHistDateFrom','caisseHistDateTo');
+    caisseDateFilterInit = true;
+  }
+  renderCaisseView();
+  renderFournisseursView();
+}
+
+/* ============ REFRESH & START ============ */
+// Réconciliation complète (produits + commandes/paniers injectés) : toutes les 5 min.
+// Rattrape les cas que la sync incrémentale ne peut pas voir (ex: une commande désinjectée
+// de Noest, dont le tracking redevient null, sort du filtre incrémental).
+async function refreshProductsCatalog(){
+  [PRODUCTS, ORDERS_LIGHT, CARTS_LIGHT] = await Promise.all([loadProducts(), loadOrdersLight(), loadCartsLight()]);
+  productsLastLoadedAt = Date.now();
+  lastOrdersLightSyncAt = Date.now();
+  lastCartsLightSyncAt = Date.now();
+    fillProductSelect(document.getElementById('recProductSelect'));
+  fillProductSelect(document.getElementById('retProductSelect'));
+  fillProductSelect(document.getElementById('adjProductSelect'));
+  renderStockList();
+}
+
+async function refreshStockData(){
+  [PRODUCTS, ORDERS_LIGHT, CARTS_LIGHT, STOCK_RECEPTIONS, STOCK_RETURNS, STOCK_ADJUSTMENTS, SUPPLIERS] = await Promise.all([
+    loadProducts(), loadOrdersLight(), loadCartsLight(), loadStockReceptions(), loadStockReturns(), loadStockAdjustments(), loadSuppliers()
+  ]);
+  productsLastLoadedAt = Date.now();
+  lastOrdersLightSyncAt = Date.now();
+  lastCartsLightSyncAt = Date.now();
+    fillProductSelect(document.getElementById('recProductSelect'));
+  fillProductSelect(document.getElementById('retProductSelect'));
+  fillProductSelect(document.getElementById('adjProductSelect'));
+  fillSupplierSelect(document.getElementById('recSupplierSelect'));
+  if(!stockDateFiltersInit){
+    applyQuickPeriod('month','recHistDateFrom','recHistDateTo');
+    applyQuickPeriod('month','retHistDateFrom','retHistDateTo');
+    stockDateFiltersInit = true;
+  }
+  renderStockList();
+  renderReceptionsList();
+  renderReturnsList();
+}
+
+// Rafraîchissement léger (toutes les 30s) : ne retélécharge plus tout l'historique des
+// commandes/paniers injectés (sync incrémentale), et ne touche jamais aux images produits.
+async function refreshStockLight(){
+  const [, , receptions, returns, adjustments, suppliers] = await Promise.all([
+    syncOrdersLightIncremental(), syncCartsLightIncremental(),
+    loadStockReceptions(), loadStockReturns(), loadStockAdjustments(), loadSuppliers()
+  ]);
+  STOCK_RECEPTIONS = receptions;
+  STOCK_RETURNS = returns;
+  STOCK_ADJUSTMENTS = adjustments;
+  SUPPLIERS = suppliers;
+  renderStockList();
+  renderReceptionsList();
+  renderReturnsList();
+}
+
+async function startApp(){
+  document.getElementById('agentPill').textContent = '👷 ' + CURRENT_AGENT.name;
+  if(isCaisseAgent()){
+    document.querySelectorAll('.caisse-nav-item').forEach(el=> el.style.display='');
+    await refreshCaisseData();
+  }
+  await refreshStockData(); // chargement complet initial (produits + commandes/paniers injectés + tout le reste)
+    wireVariantSelect('recProductSelect','recVariantWrap','recVariantSelect');
+  wireVariantSelect('retProductSelect','retVariantWrap','retVariantSelect');
+  wireVariantSelect('adjProductSelect','adjVariantWrap','adjVariantSelect');
+  setInterval(refreshStockLight, 30000);       // rafraîchissement léger fréquent (sans les images produits)
+  setInterval(refreshProductsCatalog, 300000); // catalogue produits (avec images) : toutes les 5 min seulement
+  if(isCaisseAgent()) setInterval(refreshCaisseData, 30000);
+}
+
+(async function init(){
+  await loadAgentsForLogin();
+  const saved = sessionStorage.getItem(LOGIN_KEY);
+  if(saved){
+    CURRENT_AGENT = JSON.parse(saved);
+    document.getElementById('loginScreen').style.display = 'none';
+    await startApp();
+  }
+})();
+</script>
+</body>
+</html>
+
+============================================================
+

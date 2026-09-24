@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#12181A">
+<title>QuickShop — توصيل سريع و دفع آمن</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<meta property="og:type" content="website">
+<meta property="og:title" content="QuickShop — متجرك المفضل">
+<meta property="og:description" content="تسوق بسهولة وادفع عند الاستلام">
+<meta property="og:image" content="">
+<meta property="og:url" content="">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{
+    --bg:#F3F1ED; --bg-card:#FFFFFF; --ink:#171A1C; --ink-soft:#6C7278;
+    --teal:#1F4B4C; --teal-dark:#163736; --teal-tint:#DCE8E6;
+    --amber:#E08A3C; --amber-tint:#FBE6D2;
+    --line:#E3E0D8; --nav-dark:#12181A; --nav-dark-2:#1B2325; --cream:#F3F1ED;
+    --danger:#D6432F; --maxw:1280px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg); color:var(--ink); font-family:'Tajawal',sans-serif; font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased;}
+  img,svg{display:block; max-width:100%;}
+  a{color:inherit; text-decoration:none;}
+  ul{list-style:none;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  input,select,textarea{font-family:inherit;}
+  .eyebrow{font-size:12.5px; font-weight:700; color:var(--amber);}
+  h1,h2,h3{font-weight:800; color:var(--ink); line-height:1.3;}
+
+  .art{position:relative; background:linear-gradient(155deg,var(--teal-tint) 0%, var(--bg-card) 65%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:16px;}
+  .art.amber-tone{background:linear-gradient(155deg,var(--amber-tint) 0%, var(--bg-card) 65%);}
+  .art.dark-tone{background:linear-gradient(155deg,#22403f 0%, var(--nav-dark) 80%);}
+  .art svg{width:32%; height:32%; opacity:0.55; stroke:var(--teal-dark);}
+  .art.dark-tone svg{stroke:var(--cream); opacity:0.8;}
+  .art img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:inherit;}
+  .power-dot{position:absolute; top:14px; inset-inline-end:14px; width:10px; height:10px; border-radius:50%; background:var(--amber); box-shadow:0 0 0 4px rgba(224,138,60,0.18); z-index:2;}
+  .art.dark-tone .power-dot{background:#7FE0B8; box-shadow:0 0 0 4px rgba(127,224,184,0.18);}
+
+  .announce{background:var(--nav-dark); color:var(--cream); text-align:center; font-size:13px; padding:10px 20px;}
+
+  header{background:var(--nav-dark); color:var(--cream); position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(243,241,237,0.08);}
+  .nav-row{display:flex; align-items:center; justify-content:space-between; padding:14px 32px; max-width:var(--maxw); margin:0 auto; gap:24px;}
+  .logo{font-weight:800; font-size:22px; color:var(--cream); display:flex; align-items:center; gap:9px;}
+  .logo img{height:30px; width:auto;}
+  .primary-nav{display:flex; gap:26px; align-items:center;}
+  .primary-nav > li > a{font-size:15px; font-weight:500; padding:8px 2px; position:relative; opacity:0.92; cursor:pointer;}
+  .primary-nav > li > a::after{content:''; position:absolute; inset-inline-start:0; bottom:0; width:0; height:2px; background:var(--amber); transition:width .2s ease;}
+  .primary-nav > li:hover > a::after, .primary-nav > li > a.active::after{width:100%;}
+  .primary-nav .all-link{color:var(--amber);}
+  .nav-icons{display:flex; gap:16px; align-items:center;}
+  .call-chip{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); color:var(--cream); font-size:12.5px; font-weight:700; padding:8px 14px; border-radius:999px; display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .menu-toggle{display:none;}
+  .mobile-nav{display:none; flex-direction:column; background:var(--nav-dark-2); padding:10px 20px 16px;}
+  .mobile-nav.open{display:flex;}
+  .mobile-nav a{padding:11px 4px; font-size:14.5px; border-bottom:1px solid rgba(243,241,237,0.08);}
+  .mobile-nav a.all-link{color:var(--amber);}
+
+  .hero{position:relative; padding:16px 32px 0;}
+  .hero-inner{max-width:var(--maxw); margin:0 auto; position:relative; border-radius:18px; overflow:hidden;}
+  .hero-slide{display:none; height:150px; position:relative; background:linear-gradient(160deg,var(--teal) 0%, var(--teal-dark) 100%); align-items:center;}
+  .hero-slide.active{display:flex;}
+  .hero-slide::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 25% 30%, rgba(243,241,237,0.14), transparent 55%);}
+  .hero-slide.amber{background:linear-gradient(160deg,var(--amber) 0%, #A85A22 100%);}
+  .hero-content{position:relative; padding:0 26px; color:var(--cream); max-width:520px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .hero-content .eyebrow{color:var(--amber); flex-basis:100%;}
+  .hero-content h1{font-size:19px; color:var(--cream); margin:2px 0; flex:1; min-width:180px;}
+  .btn{display:inline-block; padding:10px 20px; border-radius:999px; font-size:13px; font-weight:700; transition:transform .15s ease; border:none; cursor:pointer; white-space:nowrap;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:scale(.95);}
+  .btn-light{background:var(--cream); color:var(--ink);}
+  .btn-dark{background:var(--nav-dark); color:var(--cream);}
+  .btn-teal{background:var(--teal); color:#fff;}
+  .btn.full{width:100%; text-align:center;}
+  .btn:disabled{opacity:.6; cursor:default; transform:none;}
+  .hero-dots{position:absolute; bottom:8px; inset-inline-start:26px; display:flex; gap:6px; z-index:5;}
+  .hero-dots button{width:6px; height:6px; border-radius:50%; background:rgba(243,241,237,0.4); transition:all .2s ease;}
+  .hero-dots button.active{background:var(--cream); width:16px; border-radius:4px;}
+
+  .cat-strip{display:flex; gap:8px; overflow-x:auto; padding:14px 32px; max-width:var(--maxw); margin:0 auto; scrollbar-width:none;}
+  .cat-strip::-webkit-scrollbar{display:none;}
+  .cat-chip{flex-shrink:0; display:flex; align-items:center; gap:7px; padding:8px 14px 8px 8px; border-radius:999px; background:var(--bg-card); border:1.5px solid var(--line); font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; cursor:pointer; transition:transform .15s ease, background .15s ease, border-color .15s ease;}
+  .cat-chip:active{transform:scale(.94);}
+  .cat-chip:hover{border-color:var(--teal);}
+  .cat-chip.active{background:var(--nav-dark); border-color:var(--nav-dark); color:#fff;}
+  .cat-chip .dot{width:26px; height:26px; border-radius:50%; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;}
+  .cat-chip .dot img{width:100%; height:100%; object-fit:cover;}
+  .cat-chip.active .dot{background:rgba(255,255,255,.15);}
+
+  section{padding:36px 32px;}
+  .bg-alt{background:var(--bg-card);}
+  .section-head{max-width:var(--maxw); margin:0 auto 20px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .section-head h2{font-size:22px;}
+  .section-head .view-all{font-size:13px; font-weight:700; color:var(--teal); border-bottom:2px solid var(--teal); padding-bottom:2px; white-space:nowrap; cursor:pointer;}
+
+  .cat-grid{max-width:var(--maxw); margin:0 auto; display:grid; grid-template-columns:repeat(6,1fr); gap:16px;}
+  .cat-card{display:flex; flex-direction:column; gap:10px; cursor:pointer;}
+  .cat-card .art{aspect-ratio:1/1;}
+  .cat-card h3{font-size:13.5px; font-weight:700; text-align:center;}
+  .empty-note{text-align:center; color:var(--ink-soft); font-size:14px; padding:20px; grid-column:1/-1;}
+
+  .product-grid{max-width:var(--maxw); margin:0 auto; display:grid; grid-template-columns:repeat(4,1fr); gap:20px 16px;}
+  .product-card{position:relative; transition:transform .2s ease;}
+  .product-card:hover{transform:translateY(-5px);}
+  .product-card:active{transform:scale(.98);}
+  .product-media{position:relative; border-radius:18px; overflow:hidden; aspect-ratio:1/1; background:var(--bg-card);}
+  .product-media .art{position:absolute; inset:0; border-radius:0; transition:opacity .35s ease;}
+  .product-media img{transition:transform .5s ease;}
+  .product-card:hover .product-media img{transform:scale(1.06);}
+  .product-media .art-alt{opacity:0;}
+  .product-card:hover .art-alt{opacity:1;}
+  .product-card:hover .art-main{opacity:0;}
+  .tag-stack{position:absolute; top:12px; inset-inline-start:12px; z-index:3; display:flex; flex-direction:column; gap:6px; align-items:flex-start;}
+  .tag{font-size:11px; font-weight:800; padding:5px 9px; border-radius:999px;}
+  .tag.sale{background:var(--amber); color:#12181A;}
+  .tag.soon{background:var(--nav-dark); color:var(--cream);}
+  .tag.urgent{background:var(--danger); color:#fff; display:flex; align-items:center; gap:5px;}
+  .tag.urgent .pulse{width:6px; height:6px; border-radius:50%; background:#fff; animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.4; transform:scale(1.4);}}
+  .quick-add{position:absolute; inset-inline-start:12px; inset-inline-end:12px; bottom:12px; background:var(--nav-dark); color:var(--cream);
+    text-align:center; padding:10px; border-radius:10px; font-size:12.5px; font-weight:700; opacity:0; transform:translateY(6px); transition:all .2s ease; z-index:3; cursor:pointer;}
+  .quick-add:active{transform:scale(.94)!important;}
+  .product-card:hover .quick-add{opacity:1; transform:translateY(0);}
+  @media (hover:none){ .quick-add{opacity:1; transform:translateY(0); position:static; margin-top:9px;} }
+  .product-info{padding-top:12px;}
+  .product-info h3{font-size:14px; font-weight:700; margin-bottom:3px;}
+  .product-info .sub{font-size:12px; color:var(--ink-soft); margin-bottom:6px; font-weight:400; min-height:16px;}
+  .price{font-size:14.5px; font-weight:800;}
+  .price .old{font-size:12px; font-weight:600; color:var(--ink-soft); text-decoration:line-through; margin-inline-start:6px;}
+  .price .cur{font-size:11.5px; font-weight:600; color:var(--ink-soft);}
+
+  .trust-carousel{max-width:var(--maxw); margin:0 auto; position:relative; border-radius:18px; overflow:hidden;}
+  .trust-slide{display:none; position:relative; align-items:center; gap:16px; padding:20px 24px; min-height:120px;}
+  .trust-slide.active{display:flex;}
+  .trust-slide.dark-tone{background:linear-gradient(155deg,#22403f 0%, var(--nav-dark) 80%); color:var(--cream);}
+  .trust-slide.amber-tone{background:linear-gradient(155deg,var(--amber) 0%, #A85A22 100%); color:var(--cream);}
+  .trust-art{position:relative; width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.14); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .trust-art svg{width:50%; height:50%; stroke:currentColor; opacity:.95;}
+  .trust-text .eyebrow{color:rgba(255,255,255,.75); margin-bottom:3px;}
+  .trust-slide.amber-tone .eyebrow{color:rgba(255,255,255,.85);}
+  .trust-text h2{font-size:14.5px; color:var(--cream); margin:0;}
+  .trust-dots{position:absolute; bottom:10px; inset-inline-end:18px; display:flex; gap:6px; z-index:5;}
+  .trust-dots button{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.4); transition:all .2s ease;}
+  .trust-dots button.active{background:#fff; width:16px; border-radius:4px;}
+
+  .cs-title{font-size:12px; font-weight:800; color:var(--ink-soft); margin-bottom:9px;}
+  .cs-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none;}
+  .cs-row::-webkit-scrollbar{display:none;}
+  .cs-card{flex-shrink:0; width:100px; cursor:pointer;}
+  .cs-card .art{aspect-ratio:1/1; border-radius:12px;}
+  .cs-card h4{font-size:11px; font-weight:700; margin-top:6px; line-height:1.3; max-height:2.6em; overflow:hidden;}
+  .cs-card .cs-price{font-size:11px; font-weight:800; color:var(--teal); margin-top:2px;}
+  .recent-strip{max-width:var(--maxw); margin:0 auto; padding:0 32px 8px;}
+
+  .newsletter{max-width:var(--maxw); margin:0 auto; background:var(--teal-tint); border-radius:22px; padding:36px; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;}
+  .newsletter h2{font-size:20px; max-width:380px;}
+  .newsletter p{color:var(--ink-soft); font-size:13.5px; margin-top:6px; max-width:380px; font-weight:400;}
+  .newsletter form{display:flex; gap:10px; min-width:300px;}
+  .newsletter input[type=tel]{flex:1; padding:12px 16px; border-radius:999px; border:1px solid var(--line); background:var(--bg-card); font-size:13.5px; font-family:inherit; text-align:right;}
+
+  footer{background:var(--nav-dark); color:rgba(243,241,237,0.78); padding:44px 32px 22px;}
+  .footer-grid{max-width:var(--maxw); margin:0 auto; display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:28px; padding-bottom:32px; border-bottom:1px solid rgba(243,241,237,0.12);}
+  .footer-grid .logo{margin-bottom:10px;}
+  .footer-grid p{font-size:13px; line-height:1.8; max-width:260px; color:rgba(243,241,237,0.6); font-weight:400;}
+  .footer-col h4{font-size:13.5px; font-weight:800; margin-bottom:14px; color:var(--cream);}
+  .footer-col li{margin-bottom:9px; font-size:13.5px; font-weight:400;}
+  .footer-col a:hover{text-decoration:underline;}
+  .footer-bottom{max-width:var(--maxw); margin:0 auto; display:flex; justify-content:space-between; align-items:center; padding-top:18px; font-size:12px; color:rgba(243,241,237,0.5); flex-wrap:wrap; gap:10px;}
+
+  @media (max-width:1024px){
+    .cat-grid{grid-template-columns:repeat(3,1fr);}
+    .product-grid{grid-template-columns:repeat(2,1fr);}
+    .footer-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:720px){
+    .primary-nav{display:none;}
+    .menu-toggle{display:block;}
+    .menu-toggle svg{width:22px; height:22px; stroke:var(--cream); fill:none; stroke-width:1.6;}
+    .hero{padding:12px 14px 0;}
+    .hero-slide{height:112px;}
+    .hero-content{padding:0 18px; gap:10px;}
+    .hero-content h1{font-size:16px; min-width:140px;}
+    .btn{padding:9px 16px; font-size:12.5px;}
+    .cat-strip{padding:12px 14px;}
+    .cat-grid{grid-template-columns:repeat(2,1fr);}
+    .product-grid{grid-template-columns:1fr 1fr;}
+    section{padding:28px 14px;}
+    .newsletter{padding:24px 18px; flex-direction:column; align-items:flex-start;}
+    .newsletter form{width:100%;}
+    .footer-grid{grid-template-columns:1fr;}
+    .nav-row{padding:12px 18px;}
+  }
+
+  .overlay{position:fixed; inset:0; background:rgba(18,24,26,.55); z-index:200; display:none; align-items:flex-end; justify-content:center;}
+  .overlay.show{display:flex;}
+  .sheet{background:var(--bg-card); width:100%; max-width:540px; margin:0 auto; max-height:94vh; overflow-y:auto; border-radius:22px 22px 0 0; animation:up .25s ease;}
+  @keyframes up{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .sheet-close{position:sticky; top:10px; margin-inline-end:12px; float:inline-start; width:32px; height:32px; border-radius:50%; background:rgba(18,24,26,.6); color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; z-index:5;}
+  .sheet-gallery{aspect-ratio:1/1; background:var(--teal-tint); overflow:hidden; position:relative;}
+  .sheet-gallery img{width:100%; height:100%; object-fit:cover;}
+  .gallery-dots{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px;}
+  .gallery-dots button{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.5);}
+  .gallery-dots button.active{background:#fff; width:16px; border-radius:4px;}
+  .sheet-body{padding:20px 20px 28px;}
+  .sheet-badge{display:inline-block; background:var(--amber); color:#12181A; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; margin-bottom:8px;}
+  .sheet-name{font-size:19px; font-weight:800; margin-bottom:6px;}
+  .sheet-price{font-size:20px; font-weight:800; color:var(--teal); margin-bottom:14px;}
+  .sheet-price .old{font-size:14px; color:var(--ink-soft); text-decoration:line-through; font-weight:600; margin-inline-start:8px;}
+  .sheet-desc{font-size:13.5px; color:var(--ink-soft); line-height:1.8; margin-bottom:14px; white-space:pre-line;}
+  .sheet-features{margin-bottom:16px;}
+  .sheet-features li{font-size:13px; color:var(--ink-soft); padding-inline-start:18px; position:relative; margin-bottom:7px; line-height:1.6;}
+  .sheet-features li::before{content:'✓'; position:absolute; inset-inline-start:0; color:var(--teal); font-weight:800;}
+
+  .variant-block{margin-bottom:14px;}
+  .variant-label{font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:8px;}
+  .variant-opts{display:flex; gap:8px; flex-wrap:wrap;}
+  .variant-opt{padding:8px 14px; border-radius:999px; border:1.5px solid var(--line); font-size:12.5px; font-weight:700; cursor:pointer; background:var(--bg-card);}
+  .variant-opt.active{background:var(--nav-dark); border-color:var(--nav-dark); color:#fff;}
+  .variant-opt.oos{opacity:.4; text-decoration:line-through; cursor:not-allowed;}
+  .qty-btn{min-width:44px; height:44px; border-radius:9px; background:#fff; border:2px solid var(--line); font-size:17px; font-weight:700; color:var(--teal-dark); display:flex; align-items:center; justify-content:center; transition:.15s; cursor:pointer;}
+  .qty-btn:active{transform:scale(.92);}
+  .qty-row{display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:11px; padding:8px 12px; margin-bottom:12px; border:2px solid var(--line);}
+  .qty-label{font-size:13px; font-weight:700;}
+  .qty-ctrl{display:flex; align-items:center; gap:11px;}
+  .qty-val{width:28px; text-align:center; font-size:16px; font-weight:800;}
+
+  .bundle-block{margin-bottom:14px;}
+  .bundle-opt{display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border:1.5px solid var(--line); border-radius:12px; margin-bottom:8px; cursor:pointer; font-size:13px; font-weight:700;}
+  .bundle-opt.active{background:var(--teal-tint); border-color:var(--teal);}
+
+  .form-title{font-weight:700; font-size:14px; margin-bottom:12px; padding-top:16px; border-top:1px dashed var(--line);}
+  .field{margin-bottom:11px;}
+  .field label{display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%; padding:11px 13px; border:1.5px solid var(--line); border-radius:10px; font-size:13.5px; background:var(--bg);}
+  .field input.error{border-color:var(--danger);}
+  .field-err{font-size:11.5px; color:var(--danger); margin-top:4px; font-weight:700;}
+  .field textarea{resize:vertical; min-height:56px;}
+  .delivery-toggle{display:flex; gap:8px; margin-bottom:12px;}
+  .delivery-opt{flex:1; text-align:center; padding:10px; border:1.5px solid var(--line); border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer;}
+  .delivery-opt.active{background:var(--nav-dark); border-color:var(--nav-dark); color:#fff;}
+  .total-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; font-size:14px; font-weight:800; border-top:1px dashed var(--line); margin-top:6px;}
+  .form-msg{text-align:center; font-size:13px; font-weight:700; margin-top:10px; padding:10px; border-radius:10px; display:none;}
+  .form-msg.ok{display:block; background:var(--teal-tint); color:var(--teal-dark);}
+  .form-msg.err{display:block; background:var(--amber-tint); color:#A85A22;}
+  .fast-warning{display:none; background:var(--amber-tint); color:#7A5228; font-size:12px; font-weight:700; padding:9px; border-radius:9px; margin-top:8px;}
+  .coming-lock{text-align:center; padding:16px; background:var(--amber-tint); border-radius:12px; font-weight:700; color:#7A5228; font-size:13.5px;}
+  .success-screen{text-align:center; padding:32px 20px 28px;}
+  .success-screen .s-icon{font-size:56px; margin-bottom:12px; animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+  @keyframes popIn{from{transform:scale(.5); opacity:0;} to{transform:scale(1); opacity:1;}}
+  .success-screen .s-title{font-size:20px; font-weight:800; color:var(--teal-dark); margin-bottom:6px;}
+  .success-screen .s-sub{font-size:13.5px; color:var(--ink-soft); line-height:1.7; margin-bottom:14px;}
+  .success-screen .s-summary{background:var(--teal-tint); border-radius:12px; padding:14px 16px; margin-bottom:16px; text-align:right; font-size:13px; line-height:2;}
+  .success-screen .s-summary strong{color:var(--teal-dark);}
+  .wa-btn{display:inline-flex; align-items:center; gap:8px; background:#25D366; color:#fff; padding:12px 24px; border-radius:12px; font-weight:700; text-decoration:none; font-size:15px; margin-top:4px; margin-bottom:8px;}
+  .continue-btn{display:block; margin-top:10px; color:var(--ink-soft); font-size:13px; font-weight:700; cursor:pointer; text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div class="announce">⚡ توصيل خلال 48 ساعة &nbsp;·&nbsp; <span style="font-weight:700">الدفع عند الاستلام</span></div>
+
+<header>
+  <div class="nav-row">
+    <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke-width="1.6" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <a href="#" class="logo"><img src="logo-icon.png" alt="QuickShop"><span>Quick<span style="color:var(--amber)">Shop</span></span></a>
+    <ul class="primary-nav" id="primaryNav"><li><a class="all-link" data-cat="all">الكل</a></li></ul>
+    <div class="nav-icons">
+      <a class="call-chip" id="phoneBtn" href="#">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M4 5c0 8 7 15 15 15l2-4-5-2-2 2c-3-1-6-4-7-7l2-2-2-5H4z"/></svg>
+        اتصل بنا
+      </a>
+    </div>
+  </div>
+  <div class="mobile-nav" id="mobileNav"><a class="all-link" data-cat="all">الكل</a></div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-slide active" data-slide="0">
+      <div class="hero-content"><div class="eyebrow">QuickShop</div><h1>أجهزتك اليومية، بضغطة واحدة</h1><a href="#featured" class="btn btn-light">تسوّق الآن ⚡</a></div>
+    </div>
+    <div class="hero-slide amber" data-slide="1">
+      <div class="hero-content"><div class="eyebrow">عروض محدودة</div><h1>تخفيضات على منتجات مختارة</h1><a href="#featured" class="btn btn-light">تسوّق التخفيضات</a></div>
+    </div>
+    <div class="hero-slide" data-slide="2" style="background:linear-gradient(160deg,#2E5D5B 0%, var(--nav-dark) 100%);">
+      <div class="hero-content"><div class="eyebrow">دفع عند الاستلام</div><h1>طلب الآن، وادفع عند الاستلام</h1><a href="#featured" class="btn btn-light">اكتشف المنتجات</a></div>
+    </div>
+    <div class="hero-dots"><button class="active" data-dot="0"></button><button data-dot="1"></button><button data-dot="2"></button></div>
+  </div>
+</div>
+
+<div class="cat-strip" id="catStrip"></div>
+<div class="recent-strip" id="recentStrip" style="display:none;">
+  <div class="cs-title">👀 استعرضته مؤخرًا</div>
+  <div class="cs-row" id="recentRow"></div>
+</div>
+
+<!-- For You Section — shown only after enough behavioral data -->
+<div id="forYouSection" style="display:none;">
+  <div class="foryou-head">
+    <div class="foryou-title">✨ مختار لك</div>
+    <div class="foryou-badge">مخصّص لك</div>
+  </div>
+  <div class="foryou-strip" id="forYouStrip"></div>
+</div>
+
+<section id="featured" style="padding-top:20px;">
+  <div class="section-head">
+    <div><div class="eyebrow" id="gridEyebrow">🔥 الأكثر طلبًا</div><h2 id="gridTitle">منتجات تستاهل التجربة.</h2></div>
+    <a class="view-all" data-cat="all">عرض الكل</a>
+  </div>
+  <div class="product-grid" id="productGrid"></div>
+</section>
+
+<section class="bg-alt">
+  <div class="section-head">
+    <div><div class="eyebrow">تسوّق حسب الفئة</div><h2>ابحث عن حاجتك بضغطة واحدة.</h2></div>
+    <a class="view-all" data-cat="all">عرض الكل</a>
+  </div>
+  <div class="cat-grid" id="catGrid"></div>
+</section>
+
+<section style="padding-top:28px; padding-bottom:28px;">
+  <div class="trust-carousel" id="trustCarousel">
+    <div class="trust-slide dark-tone active" data-t="0">
+      <div class="trust-art"><div class="power-dot"></div><svg viewBox="0 0 24 24" stroke-width="1.3"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3-6 3 1.5-6.5L3 9l6-1 3-6z"/></svg></div>
+      <div class="trust-text"><div class="eyebrow">ضمان موثوق</div><h2>جودة مضمونة على جميع المنتجات.</h2></div>
+    </div>
+    <div class="trust-slide amber-tone" data-t="1">
+      <div class="trust-art"><div class="power-dot"></div><svg viewBox="0 0 24 24" stroke-width="1.3"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+      <div class="trust-text"><div class="eyebrow">توصيل سريع</div><h2>يصلك خلال 48 إلى 72 ساعة.</h2></div>
+    </div>
+    <div class="trust-slide dark-tone" data-t="2">
+      <div class="trust-art"><div class="power-dot"></div><svg viewBox="0 0 24 24" stroke-width="1.2"><path d="M4 10h16M4 10l2-5h12l2 5M4 10v9h16v-9M9 14h6"/></svg></div>
+      <div class="trust-text"><div class="eyebrow">علاش الناس تختار QuickShop؟</div><h2>خلّص كي توصلك — بلا مفاجآت.</h2></div>
+    </div>
+    <div class="trust-dots" id="trustDots"><button class="active" data-td="0"></button><button data-td="1"></button><button data-td="2"></button></div>
+  </div>
+</section>
+
+<section class="bg-alt">
+  <div class="newsletter">
+    <div><h2>محتاج نصيحة قبل ما تطلب؟</h2><p>اترك رقمك وسنتصل بك للمساعدة في طلبك — بدون التزام.</p></div>
+    <form id="callbackForm">
+      <input type="tel" id="callbackPhone" placeholder="رقم هاتفك" required>
+      <button type="submit" class="btn btn-dark">📞 كلّمني</button>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="#" class="logo"><img src="logo-icon.png" alt="QuickShop"><span>Quick<span style="color:var(--amber)">Shop</span></span></a>
+      <p>توصيل سريع و دفع آمن لكل ولايات الجزائر — الدفع عند الاستلام متاح على جميع الطلبات.</p>
+    </div>
+    <div class="footer-col"><h4>المتجر</h4><ul id="footerCats"></ul></div>
+    <div class="footer-col"><h4>المساعدة</h4><ul>
+      <li><a href="#">الشحن والتوصيل</a></li><li><a href="#">الإرجاع والاستبدال</a></li>
+      <li><a href="#">الأسئلة الشائعة</a></li><li><a id="footerPhone" href="#">اتصل بنا</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>الشركة</h4><ul><li><a href="#">من نحن</a></li><li><a href="#">تابعنا</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><span>© <span id="year"></span> QuickShop. جميع الحقوق محفوظة.</span><span>سياسة الخصوصية · الشروط والأحكام</span></div>
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeSheet">✕</button>
+    <div class="sheet-gallery">
+      <img id="sheetImg" src="" alt="">
+      <div class="gallery-dots" id="galleryDots" style="display:none;"></div>
+    </div>
+    <div class="sheet-body">
+      <div id="sheetBadgeZone"></div>
+      <div class="sheet-name" id="sheetName"></div>
+      <div class="sheet-price" id="sheetPrice"></div>
+      <div class="sheet-desc" id="sheetDesc"></div>
+      <ul class="sheet-features" id="sheetFeatures"></ul>
+      <div id="crossSellZone"></div>
+
+      <div id="orderZone">
+        <div id="variantsZone"></div>
+        <div id="bundlesZone"></div>
+
+        <div class="form-title">اطلب الآن — الدفع عند الاستلام</div>
+        <form id="orderForm">
+          <div class="field"><label>الاسم الكامل</label><input type="text" id="fName" required></div>
+          <div class="field">
+            <label>رقم الهاتف</label>
+            <input type="tel" id="fPhone" required placeholder="05XXXXXXXX">
+            <div class="field-err" id="phoneErr" style="display:none;"></div>
+          </div>
+          <div class="field"><label>الولاية</label><select id="fWilaya" required></select></div>
+          <div class="field"><label>البلدية</label><select id="fCommune" required><option value="">اختر البلدية</option></select></div>
+
+          <div class="delivery-toggle" id="deliveryToggle">
+            <div class="delivery-opt active" data-type="home">توصيل للمنزل</div>
+            <div class="delivery-opt" data-type="bureau">توصيل لمكتب</div>
+          </div>
+
+          <div class="field"><label>ملاحظات (اختياري)</label><textarea id="fNotes"></textarea></div>
+          <div class="total-row"><span>المجموع</span><span id="totalPrice">—</span></div>
+          <button type="submit" class="btn btn-teal full" id="submitBtn">⚡ أكّد طلبك</button>
+          <div class="fast-warning" id="fastWarning">⚠️ يبدو أنك أكملت النموذج بسرعة كبيرة — تأكد من صحة بياناتك</div>
+          <div class="form-msg" id="formMsg"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://txlcppqnpoqnyjskevbh.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4bGNwcHFucG9xbnlqc2tldmJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MDQzNTgsImV4cCI6MjEwMzE4MDM1OH0.pFCdNJXkUI981atVJJqavXo4EcMZu9XMOVAL-mkZ58Q";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function fmt(n){ return Number(n||0).toLocaleString('ar-DZ'); }
+function uid(){ return Date.now()+'_'+Math.random().toString(36).slice(2,8); }
+function esc(str){
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+/* ============================================================
+   QS_Engine — Personalization & Recommendation Engine v1.0
+   Architecture: localStorage (fast) + Supabase (persistent)
+   ============================================================ */
+const QS_Engine = (function(){
+
+  /* ── Constants ── */
+  const VISITOR_KEY = 'qs_visitor_id';
+  const PROFILE_KEY = 'qs_profile';
+  const MIN_EVENTS_FOR_PERSONALIZATION = 3;
+  const DECAY_FACTOR = 0.92;          // older events lose weight
+  const SYNC_DEBOUNCE_MS = 4000;      // batch writes to Supabase
+  const DEBUG = new URLSearchParams(location.search).get('qs_debug') === '1';
+
+  /* ── Visitor ID ── */
+  function getVisitorId(){
+    let id = null;
+    try{ id = localStorage.getItem(VISITOR_KEY); }catch(e){}
+    if(!id){ id = 'v_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); try{ localStorage.setItem(VISITOR_KEY, id); }catch(e){} }
+    return id;
+  }
+  const VISITOR_ID = getVisitorId();
+
+  /* ── Profile (localStorage) ── */
+  const DEFAULT_PROFILE = {
+    cats: {},          // {catName: score}
+    products: {},      // {id: {views:n, lastSeen:ts, price:n}}
+    priceMin: null, priceMax: null, priceSum: 0, priceCount: 0,
+    totalEvents: 0,
+    firstSeen: Date.now(),
+    lastSeen: Date.now(),
+    visitCount: 1
+  };
+  function loadProfile(){
+    try{
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if(raw) return Object.assign({}, DEFAULT_PROFILE, JSON.parse(raw));
+    }catch(e){}
+    return Object.assign({}, DEFAULT_PROFILE);
+  }
+  function saveProfile(p){
+    try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }catch(e){}
+  }
+
+  let profile = loadProfile();
+
+  /* ── Score helpers ── */
+  function decayScores(){
+    Object.keys(profile.cats).forEach(k=>{
+      profile.cats[k] = +(profile.cats[k] * DECAY_FACTOR).toFixed(3);
+      if(profile.cats[k] < 0.1) delete profile.cats[k];
+    });
+  }
+  function addCatScore(cat, delta){
+    if(!cat) return;
+    profile.cats[cat] = +(((profile.cats[cat]||0) + delta)).toFixed(3);
+  }
+  function addProductView(id, category, price){
+    if(!id) return;
+    const prev = profile.products[id] || {views:0, lastSeen:0, price:0};
+    profile.products[id] = { views: prev.views+1, lastSeen: Date.now(), price: price||prev.price };
+    // keep only top 40 by recency
+    const keys = Object.keys(profile.products);
+    if(keys.length > 40){
+      const sorted = keys.sort((a,b)=> profile.products[b].lastSeen - profile.products[a].lastSeen);
+      sorted.slice(40).forEach(k=> delete profile.products[k]);
+    }
+    if(price){
+      if(profile.priceMin===null || price < profile.priceMin) profile.priceMin = price;
+      if(profile.priceMax===null || price > profile.priceMax) profile.priceMax = price;
+      profile.priceSum += price; profile.priceCount++;
+    }
+  }
+
+  /* ── Event queue for Supabase ── */
+  const eventQueue = [];
+  let syncTimer = null;
+  function queueEvent(ev){
+    eventQueue.push({ visitor_id: VISITOR_ID, event: ev.event, product_id: ev.product_id||null, category: ev.category||null, price: ev.price||null, meta: ev.meta||{}, ts: Date.now() });
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(flushToSupabase, SYNC_DEBOUNCE_MS);
+  }
+  async function flushToSupabase(){
+    if(!eventQueue.length) return;
+    const batch = eventQueue.splice(0, eventQueue.length);
+    try{
+      // Upsert visitor profile
+      await sb.from('qs_visitors').upsert({
+        id: VISITOR_ID,
+        last_seen: Date.now(),
+        first_seen: profile.firstSeen,
+        visit_count: profile.visitCount,
+        total_events: profile.totalEvents,
+        cat_scores: profile.cats,
+        price_min: profile.priceMin,
+        price_max: profile.priceMax,
+        price_avg: profile.priceCount > 0 ? +(profile.priceSum/profile.priceCount).toFixed(0) : null,
+        top_products: Object.entries(profile.products).sort((a,b)=>b[1].lastSeen-a[1].lastSeen).slice(0,20).map(([id,d])=>({id,...d})),
+        utm_source: new URLSearchParams(location.search).get('utm_source') || document.referrer || 'direct',
+        user_agent: navigator.userAgent.slice(0,200),
+        order_count: profile.orderCount||0
+      }, { onConflict: 'id' });
+      // Insert events
+      if(batch.length) await sb.from('qs_events').insert(batch);
+    }catch(e){ if(DEBUG) console.warn('[QS] sync error', e.message); }
+  }
+
+  /* ── Main track function ── */
+  function track(eventName, data={}){
+    profile.totalEvents++;
+    profile.lastSeen = Date.now();
+    if(eventName !== 'scroll_deep' && eventName !== 'view_product') decayScores();
+
+    switch(eventName){
+      case 'view_product':
+      case 'open_sheet':
+        addProductView(data.id, data.category, data.price);
+        addCatScore(data.category, eventName==='open_sheet' ? 3 : 1);
+        break;
+      case 'filter_cat':
+        addCatScore(data.category, 2);
+        break;
+      case 'quick_add':
+        addProductView(data.id, data.category, data.price);
+        addCatScore(data.category, 5);
+        break;
+      case 'purchase':
+        addCatScore(data.category, 10);
+        profile.orderCount = (profile.orderCount||0)+1;
+        break;
+      case 'scroll_deep':
+        // passive signal — just log
+        break;
+    }
+
+    saveProfile(profile);
+    queueEvent({ event: eventName, product_id: data.id, category: data.category, price: data.price, meta: data.meta });
+    if(DEBUG) renderDebugPanel();
+  }
+
+  /* ── Ranking function ── */
+  function rank(products){
+    const isPersonalized = profile.totalEvents >= MIN_EVENTS_FOR_PERSONALIZATION;
+    if(!isPersonalized) return products; // cold-start: keep sort_order
+
+    const priceAvg = profile.priceCount > 0 ? profile.priceSum / profile.priceCount : null;
+    const maxCatScore = Math.max(...Object.values(profile.cats), 0.001);
+
+    return [...products].sort((a, b)=>{
+      const scoreA = computeScore(a, priceAvg, maxCatScore);
+      const scoreB = computeScore(b, priceAvg, maxCatScore);
+      return scoreB - scoreA;
+    });
+  }
+
+  function computeScore(p, priceAvg, maxCatScore){
+    let score = 0;
+
+    // 1. Category affinity (0–30 points)
+    const catS = profile.cats[p.category] || 0;
+    score += (catS / maxCatScore) * 30;
+
+    // 2. Price range match (0–20 points)
+    if(priceAvg !== null && priceAvg > 0 && p.priceNew){
+      const diff = Math.abs(p.priceNew - priceAvg);
+      const tolerance = priceAvg * 0.6;
+      if(priceAvg > 0 && p.priceNew && tolerance > 0 && diff < tolerance) score += (1 - diff/tolerance) * 20;
+    }
+
+    // 3. Already viewed → slight boost to help discovery of siblings (−5 penalty for repeat)
+    const prodData = profile.products[p.id];
+    if(prodData){
+      score -= 5; // seen before → show new things instead
+    }
+
+    // 4. Recency of interaction (0–10 points) — recently seen category
+    const recentCatBoost = Object.entries(profile.products)
+      .filter(([,d])=> {
+        const prod = (typeof window !== 'undefined' && window.PRODUCTS) ? window.PRODUCTS.find(x=>x.id===Object.keys(profile.products).find(k=>k===Object.keys(profile.products)[0])) : null;
+        return false; // simplified — cat boost already handled via cat_scores
+      }).length;
+
+    // 5. Business priority — products with badge (sale/promo) get +5
+    if(p.badge) score += 5;
+
+    // 6. Price completeness (has old price = on sale) → +3
+    if(p.priceOld && p.priceOld > p.priceNew) score += 3;
+
+    return score;
+  }
+
+  /* ── Explainability ── */
+  function explain(p){
+    const reasons = [];
+    const catS = profile.cats[p.category];
+    if(catS > 0) reasons.push(`اهتمامك بفئة "${p.category}" (${catS.toFixed(1)} نقطة)`);
+    if(profile.priceCount > 0){
+      const avg = profile.priceSum/profile.priceCount;
+      const diff = Math.abs(p.priceNew - avg);
+      if(diff < avg*0.6) reasons.push(`السعر قريب من نطاقك المعتاد (~${fmt(avg)} دج)`);
+    }
+    if(profile.products[p.id]) reasons.push(`شاهدته من قبل`);
+    if(p.badge) reasons.push(`عليه عرض خاص: ${p.badge}`);
+    if(p.priceOld > p.priceNew) reasons.push(`تخفيض ${Math.round((1-p.priceNew/p.priceOld)*100)}%`);
+    return reasons;
+  }
+
+  /* ── "For You" section ── */
+  function getForYou(products, count=4){
+    if(profile.totalEvents < MIN_EVENTS_FOR_PERSONALIZATION) return [];
+    const topCats = Object.entries(profile.cats).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([c])=>c);
+    const unseen = products.filter(p=> p.active!==false && !profile.products[p.id]);
+    const seenCats = products.filter(p=> p.active!==false && topCats.includes(p.category) && !profile.products[p.id]);
+    const pool = [...new Set([...seenCats,...unseen])];
+    return rank(pool).slice(0, count);
+  }
+
+  /* ── Debug Panel ── */
+  function renderDebugPanel(){
+    let panel = document.getElementById('qs-debug-panel');
+    if(!panel){
+      panel = document.createElement('div');
+      panel.id = 'qs-debug-panel';
+      panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#12181Aee;color:#7FE0B8;font:12px/1.5 monospace;padding:10px 14px;z-index:9999;max-height:220px;overflow-y:auto;backdrop-filter:blur(4px);border-top:1px solid #1F4B4C;';
+      document.body.appendChild(panel);
+    }
+    const cats = Object.entries(profile.cats).sort((a,b)=>b[1]-a[1]);
+    const priceAvg = profile.priceCount>0 ? Math.round(profile.priceSum/profile.priceCount) : null;
+    panel.innerHTML = `
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+        <div><b style="color:#E08A3C">🧠 QS_Engine Debug</b><br>
+          Visitor: <span style="color:#fff">${VISITOR_ID}</span><br>
+          Events: ${profile.totalEvents} | Personalized: ${profile.totalEvents >= MIN_EVENTS_FOR_PERSONALIZATION ? '✅' : `⏳ (need ${MIN_EVENTS_FOR_PERSONALIZATION - profile.totalEvents} more)`}
+        </div>
+        <div><b style="color:#E08A3C">📊 Category Scores</b><br>
+          ${cats.length ? cats.map(([c,s])=>`${c}: <b>${s.toFixed(1)}</b>`).join(' · ') : 'none yet'}
+        </div>
+        <div><b style="color:#E08A3C">💰 Price Range</b><br>
+          min: ${fmt(profile.priceMin)} · max: ${fmt(profile.priceMax)} · avg: ${fmt(priceAvg)} دج
+        </div>
+        <div><b style="color:#E08A3C">👁 Viewed Products</b><br>
+          ${Object.keys(profile.products).length} products
+        </div>
+      </div>`;
+  }
+
+  /* ── Init: mark returning visitor ── */
+  (function initVisit(){
+    const now = Date.now();
+    const lastSeen = profile.lastSeen || 0;
+    const HOUR = 3600000;
+    if(now - lastSeen > HOUR){
+      profile.visitCount = (profile.visitCount||1) + 1;
+      profile.lastSeen = now;
+      saveProfile(profile);
+    }
+    if(DEBUG){ document.addEventListener('DOMContentLoaded', renderDebugPanel); }
+    // flush on page hide
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden) flushToSupabase(); });
+    window.addEventListener('beforeunload', ()=>{ flushToSupabase(); });
+  })();
+
+  /* ── "For You" strip CSS injection ── */
+  (function injectStyles(){
+    const s = document.createElement('style');
+    s.textContent = `
+      #forYouSection{padding:20px 32px 0;}
+      .foryou-head{max-width:var(--maxw);margin:0 auto 14px;display:flex;align-items:center;gap:10px;}
+      .foryou-title{font-size:16px;font-weight:800;color:var(--ink);}
+      .foryou-badge{font-size:11px;font-weight:700;background:var(--amber);color:#12181A;padding:3px 9px;border-radius:999px;}
+      .foryou-strip{max-width:var(--maxw);margin:0 auto;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:6px;}
+      .foryou-strip::-webkit-scrollbar{display:none;}
+      .fycard{flex:0 0 145px;scroll-snap-align:start;background:var(--bg-card);border-radius:14px;overflow:hidden;border:1.5px solid var(--line);cursor:pointer;transition:transform .15s ease;}
+      .fycard:active{transform:scale(.96);}
+      .fycard-img{aspect-ratio:1/1;overflow:hidden;background:var(--bg);position:relative;}
+      .fycard-img img{width:100%;height:100%;object-fit:cover;}
+      .fycard-body{padding:8px 9px 10px;}
+      .fycard-name{font-size:11.5px;font-weight:700;line-height:1.35;max-height:2.7em;overflow:hidden;color:var(--ink);}
+      .fycard-price{font-size:13px;font-weight:900;color:var(--teal-dark);margin-top:4px;}
+      .fycard-why{font-size:9.5px;color:var(--ink-soft);margin-top:3px;line-height:1.3;max-height:2em;overflow:hidden;}
+      @media(max-width:720px){#forYouSection{padding:16px 14px 0;}}
+    `;
+    document.head.appendChild(s);
+  })();
+
+  /* ── Public API ── */
+  return { track, rank, explain, getForYou, profile: ()=>profile, visitorId: ()=>VISITOR_ID };
+
+})(); // end QS_Engine
+
+const WILAYAS = ["Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar","Blida","Bouira","Tamanrasset","Tebessa","Tlemcen","Tiaret","Tizi Ouzou","Alger","Djelfa","Jijel","Setif","Saida","Skikda","Sidi Bel Abbes","Annaba","Guelma","Constantine","Medea","Mostaganem","MSila","Mascara","Ouargla","Oran","El Bayadh","Illizi","Bordj Bou Arreridj","Boumerdes","El Tarf","Tindouf","Tissemsilt","El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Ain Defla","Naama","Ain Temouchent","Ghardaia","Relizane","Timimoun","Ouled Djellal","Beni Abbes","In Salah","In Guezzam","Touggourt","El Mghair","El Meniaa"];
+
+const NOEST_COMMUNES={"Adrar":["Adrar","Akabli","Aoulef","Bouda","Fenoughil","Inozghmir","O Ahmed Timmi","Reggane","Sali","Sbaa","Tamentit","Tamest","Timokten","Tit","Tsabit","Zaouiet Kounta"],"Chlef":["Abou El Hassen","Ain Merane","Ben Boutaleb","Benairia","Beni Haoua","Beni Rached","Boukadir","Bouzghaia","Breira","Chettia","Chlef","Dahra","El Hadjadj","El Karimia","El Marsa","Harchoun","Herenfa","Labiod Medjadja","Moussadek","Oued Fodda","Oued Goussine","Oued Sly","Ouled Abbes","Ouled Ben Abdelkader","Ouled Fares","Oum Drou","Sendjas","Sidi Abderrahmane","Sidi Akacha","Sobha","Tadjna","Talassa","Taougrite","Tenes","Zeboudja"],"Laghouat":["Aflou","Ain Mahdi","Ain Sidi Ali","Beidha","Benacer Ben Chohra","Brida","El Assafia","El Ghicha","El Haouaita","Gueltat Sidi Saad","Hadj Mechri","Hassi Delaa","Hassi R Mel","Kheneg","Ksar El Hirane","Laghouat","Oued M Zi","Oued Morra","Sebgag","Sidi Bouzid","Sidi Makhlouf","Tadjmout","Tadjrouna","Taouiala"],"Oum El Bouaghi":["Ain Babouche","Ain Beida","Ain Diss","Ain Fekroune","Ain Kercha","Ain Zitoun","Ainmlila","Behir Chergui","Berriche","Bir Chouhada","Dhala","El Amiria","El Belala","El Djazia","El Fedjoudj Boughrar","El Harmilia","Fkirina","Hanchir Toumghani","Ksar Sbahi","Meskiana","Oued Nini","Ouled Gacem","Ouled Hamla","Ouled Zouai","Oum El Bouaghi","Rahia","Sigus","Souk Naamane","Zorg"],"Batna":["Ain Djasser","Ain Touta","Ain Yagout","Amdoukal","Arris","Barika","Batna","Beni Foudhala El Hakania","Bitam","Boulhilat","Boumagueur","Boumia","Bouzina","Chemora","Chir","Djerma","Djezzar","El Hassi","El Madher","Fesdis","Foum Toub","Ghassira","Gosbat","Guigba","Hidoussa","Ichmoul","Inoughissen","Kimmel","Ksar Belezma","Larbaa","Lazrou","Lemsane","Maafa","Menaa","Merouana","Metkaouak","Ngaous","Oued Chaaba","Oued El Ma","Oued Taga","Ouled Ammar","Ouled Aouf","Ouled Fadel","Ouled Selam","Ouled Si Slimane","Ouyoun El Assafir","Rahbat","Ras El Aioun","Sefiane","Seggana","Seriana","Talkhamt","Taxlent","Tazoult","Teniet El Abed","Tighanimine","Tigherghar","Tilatou","Timgad","Tkout","Zanat El Beida"],"Bejaia":["Adekar","Ait Rizine","Ait Smail","Akbou","Akfadou","Amalou","Amizour","Aokas","Barbacha","Bejaia","Beni Djellil","Beni Ksila","Beni Maouch","Beni Melikeche","Boudjellil","Bouhamza","Boukhelifa","Chelata","Chemini","Darguina","Draa Kaid","El Kseur","Ferraoun","Ifelain Ilmathen","Ighil Ali","Ighram","Kendira","Kherrata","Leflaye","Mcisna","Melbou","Oued Ghir","Ouzallaguen","Seddouk","Semaoun","Sidi Aich","Sidi Ayad","Souk El Thenine","Souk Oufella","Tala Hamza","Tamokra","Tamridjet","Taourirt Ighil","Taskriout","Tazmalt","Thinabdher","Tibane","Tichi","Tifra","Timzrit","Tizi Nberber","Toudja"],"Biskra":["Ain Naga","Ain Zaatout","Besbes","Biskra","Bordj Ben Azzouz","Bouchagroun","Branis","Chetma","Djemorah","El Feidh","El Ghrous","El Hadjab","El Haouch","El Kantara","El Outaya","Foughala","Khanguet Sidinadji","Lichana","Lioua","Mchouneche","Mekhadma","Meziraa","Mlili","Oumache","Ourlal","Sidi Okba","Tolga","Zeribet El Oued"],"Bechar":["Abadla","Bechar","Beni Ounif","Boukais","Erg Ferradj","Kenedsa","Lahmar","Mechraa Houari B","Meridja","Mogheul","Tabalbala","Taghit"],"Blida":["Ain Romana","Ben Khlil","Beni Mered","Beni Tamou","Blida","Bouarfa","Boufarik","Bougara","Bouinan","Chebli","Chiffa","Chrea","Djebabra","El Affroun","Guerrouaou","Hammam Melouane","Larbaa","Meftah","Mouzaia","Oued Djer","Oued El Alleug","Ouled Selama","Ouled Yaich","Souhane","Soumaa"],"Bouira":["Aghbalou","Ahl El Ksar","Ain Bessam","Ain El Hadjar","Ain Laloui","Ain Turk","Ait Laaziz","Aomar","Ath Mansour","Bechloul","Bir Ghbalou","Bordj Oukhriss","Bouderbala","Bouira","Boukram","Chorfa","Dechmia","Dirah","Djebahia","El Adjiba","El Asnam","El Hachimia","El Hakimia","El Khebouzia","El Mokrani","Guerrouma","Hadjera Zerga","Haizer","Hanif","Kadiria","Lakhdaria","Maala","Maamora","Mchedallah","Mezdour","Oued El Berdi","Ouled Rached","Raouraoua","Ridane","Saharidj","Souk El Khemis","Sour El Ghozlane","Taghzout","Taguedit","Zbarbar"],"Tamanrasset":["Abalessa","Idles","In Amguel","Tamanghasset","Tazouk"],"Tebessa":["Ain Zerga","Bedjene","Bekkaria","Bir Dheheb","Bir El Ater","Bir El Mokadem","Boukhadra","Boulhaf Dyr","Cheria","El Aouinet","El Kouif","El Ma El Biodh","El Mazeraa","El Meridj","El Ogla","El Ogla El Malha","Ferkane","Gorriguer","Hammamet","Lahouidjbet","Morsott","Negrine","Ouenza","Oum Ali","Safsaf El Ouesra","Stah Guentis","Tebessa","Thlidjene"],"Tlemcen":["Ain Fetah","Ain Fezza","Ain Ghoraba","Ain Kebira","Ain Nehala","Ain Tallout","Ain Youcef","Amieur","Azails","Bab El Assa","Beni Bahdel","Beni Boussaid","Beni Mester","Beni Ouarsous","Beni Semiel","Beni Snous","Bensekrane","Bouhlou","Chetouane","Dar Yaghmouracene","Djebala","El Aricha","El Bouihi","El Fehoul","El Gor","Fellaoucene","Ghazaouet","Hammam Boughrara","Hennaya","Honaine","Maghnia","Mansourah","Marsa Ben Mhidi","Msirda Fouaga","Nedroma","Oued Chouly","Ouled Mimoun","Ouled Riyah","Remchi","Sabra","Sebbaa Chioukh","Sebdou","Sidi Abdelli","Sidi Djillali","Sidi Medjahed","Souahlia","Souani","Souk El Khemis","Souk Thlata","Terni Beni Hediel","Tianet","Tlemcen","Zenata"],"Tiaret":["Ain Bouchekif","Ain Deheb","Ain El Hadid","Ain Kermes","Ain Zarit","Bougara","Chehaima","Dahmouni","Djillali Ben Amar","Faidja","Frenda","Guertoufa","Hamadia","Ksar Chellala","Madna","Mahdia","Mechraa Safa","Medrissa","Medroussa","Meghila","Mellakou","Nadorah","Naima","Oued Lilli","Ouled Djerad","Rahouia","Rechaiga","Sebaine","Sebt","Serghine","Sidi Abdelghani","Sidi Abderrahmane","Sidi Ali Mellal","Sidi Bakhti","Sidi Hosni","Sougueur","Tagdemt","Takhemaret","Tiaret","Tidda","Tousnina","Zmalet El Emir Aek"],"Tizi Ouzou":["Abi Youcef","Aghni Goughran","Aghrib","Ain El Hammam","Ain Zaouia","Ait Aggouacha","Ait Aissa Mimoun","Ait Bouadou","Ait Boumehdi","Ait Chaffaa","Ait Khelil","Ait Mahmoud","Ait Oumalou","Ait Toudert","Ait Yahia","Ait Yahia Moussa","Akbil","Akerrou","Assi Youcef","Azazga","Azzefoun","Beni Aissi","Beni Douala","Beni Yenni","Beni Ziki","Beni Zmenzer","Boghni","Boudjima","Bounouh","Bouzguen","Draa Ben Khedda","Draa El Mizan","Freha","Frikat","Iboudraren","Idjeur","Iferhounene","Ifigha","Iflissen","Illilten","Iloula Oumalou","Imsouhal","Irdjen","Larba Nait Irathen","Maatka","Makouda","Mechtrass","Mekla","Mizrana","Mkira","Ouacif","Ouadhia","Ouaguenoun","Sidi Naamane","Souamaa","Souk El Thenine","Tadmait","Tigzirt","Timizart","Tirmitine","Tizi Ghenif","Tizi Nthlata","Tizi Ouzou","Tizi Rached","Yakouren","Yatafen","Zekri"],"Alger":["Ain Benian","Ain Taya","Alger Centre","Bab Azzouar","Bab El Oued","Baba Hassen","Bachedjerah","Bains Romains","Baraki","Ben Aknoun","Beni Messous","Bir Mourad Rais","Birkhadem","Birtouta","Bologhine Ibn Ziri","Bordj El Bahri","Bordj El Kiffan","Bourouba","Bouzareah","Casbah","Cheraga","Dar El Beida","Dely Ibrahim","Djasr Kasentina","Douera","Draria","El Achour","El Biar","El Harrach","El Madania","El Magharia","El Mouradia","Hamma Anassers","Haraoua","Hussein Dey","Hydra","Khracia","Kouba","Les Eucalyptus","Mahelma","Marsa","Mohammadia","Oued Koriche","Oued Smar","Ouled Chebel","Ouled Fayet","Rahmania","Rais Hamidou","Reghaia","Rouiba","Saoula","Sidi Mhamed","Sidi Moussa","Souidania","Staoueli","Tassala El Merdja","Zeralda"],"Djelfa":["Ain Chouhada","Ain El Ibel","Ain Fekka","Ain Maabed","Ain Oussera","Amourah","Benhar","Beni Yacoub","Birine","Bouira Lahdeb","Charef","Dar Chouikh","Deldoul","Djelfa","Douis","El Guedid","El Idrissia","El Khemis","Feidh El Botma","Guernini","Guettara","Had Sahary","Hassi Bahbah","Hassi El Euch","Hassi Fedoul","Messaad","Mliliha","Moudjebara","Oum Laadham","Sed Rahal","Selmana","Sidi Baizid","Sidi Ladjel","Tadmit","Zaafrane","Zaccar"],"Jijel":["Bordj Taher","Boudria Beni Yadjis","Bouraoui Belhadef","Boussif Ouled Askeur","Chahna","Chekfa","Djemaa Beni Habibi","Djmila","El Ancer","El Aouana","El Kennar Nouchfi","El Milia","Emir Abdelkader","Erraguene","Ghebala","Jijel","Kaous","Kemir Oued Adjoul","Ouadjana","Ouled Rabah","Ouled Yahia Khadrouch","Selma Benziada","Settara","Sidi Abdelaziz","Sidi Maarouf","Taher","Texena","Ziamma Mansouriah"],"Setif":["Ain Abessa","Ain Arnat","Ain Azal","Ain El Kebira","Ain Lahdjar","Ain Legraj","Ain Oulmane","Ain Roua","Ain Sebt","Ait Naoual Mezada","Ait Tizi","Amoucha","Babor","Bazer Sakhra","Beidha Bordj","Belaa","Beni Aziz","Beni Chebana","Beni Fouda","Beni Hocine","Beni Mouhli","Beni Ouartilane","Bir El Arch","Bir Haddada","Bouandas","Bougaa","Bousselam","Boutaleb","Dehamcha","Djemila","Draa Kebila","El Eulma","El Ouldja","El Ouricia","Guellal","Guelta Zerka","Guenzet","Guidjel","Hamma","Hammam Essokhna","Hammam Guergour","Harbil","Ksar El Abtal","Maaouia","Maouklane","Mezloug","Oued El Barad","Ouled Addouane","Ouled Sabor","Ouled Sidi Ahmed","Ouled Tebben","Rosfa","Salah Bey","Serdj El Ghoul","Setif","Tachouda","Talaifacene","Taya","Tella","Tizi Nbechar"],"Saida":["Ain El Hadjar","Ain Sekhouna","Ain Soltane","Doui Thabet","El Hassasna","Hounet","Maamora","Moulay Larbi","Ouled Brahim","Ouled Khaled","Saida","Sidi Ahmed","Sidi Amar","Sidi Boubekeur","Tircine","Youb"],"Skikda":["Ain Bouziane","Ain Cherchar","Ain Kechra","Ain Zouit","Azzaba","Bein El Ouiden","Bekkouche Lakhdar","Benazouz","Beni Bachir","Beni Oulbane","Beni Zid","Bouchtata","Cheraia","Collo","Djendel Saadi Mohamed","El Ghedir","El Hadaik","El Harrouch","El Marsa","Emdjez Edchich","Es Sebt","Fil Fila","Hamadi Krouma","Kanoua","Kerkera","Kheneg Mayoum","Oued Zehour","Ouldja Boulbalout","Ouled Attia","Ouled Hebaba","Oum Toub","Ramdane Djamel","Salah Bouchaour","Sidi Mezghiche","Skikda","Tamalous","Zerdazas","Zitouna"],"Sidi Bel Abbes":["Ain Adden","Ain El Berd","Ain Kada","Ain Thrid","Ain Tindamine","Amarnas","Badredine El Mokrani","Belarbi","Ben Badis","Benachiba Chelia","Bir El Hammam","Boudjebaa El Bordj","Boukhanafis","Chetouane Belaila","Dhaya","El Hacaiba","Hassi Dahou","Hassi Zehana","Lamtar","Makedra","Marhoum","Mcid","Merine","Mezaourou","Mostefa Ben Brahim","Moulay Slissen","Oued Sbaa","Oued Sefioun","Oued Taourira","Ras El Ma","Redjem Demouche","Sehala Thaoura","Sfissef","Sidi Ali Benyoub","Sidi Ali Boussidi","Sidi Bel Abbes","Sidi Brahim","Sidi Chaib","Sidi Dahou Dezairs","Sidi Hamadouche","Sidi Khaled","Sidi Lahcene","Sidi Yacoub","Tabia","Tafissour","Taoudmout","Teghalimet","Telagh","Tenira","Tessala","Tilmouni","Zerouala"],"Annaba":["Ain Berda","Annaba","Berrahel","Chetaibi","Cheurfa","El Bouni","El Hadjar","Eulma","Oued El Aneb","Seraidi","Sidi Amer","Treat"],"Guelma":["Ain Ben Beida","Ain Hessania","Ain Larbi","Ain Makhlouf","Ain Reggada","Ain Sandel","Belkhir","Ben Djarah","Beni Mezline","Bordj Sabat","Bou Hachana","Bou Hamdane","Bouati Mahmoud","Bouchegouf","Boumahra Ahmed","Dahouara","Djeballah Khemissi","El Fedjoudj","Guelaat Bou Sbaa","Guelma","Hammam Maskhoutine","Hamman Nbail","Heliopolis","Khezara","Medjez Amar","Medjez Sfa","Nechmaya","Oued Cheham","Oued Fragha","Oued Zenati","Ras El Agba","Roknia","Salaoua Announa","Tamlouka"],"Constantine":["Ain Abid","Ain Smara","Beni Hamiden","Constantine","Didouche Mourad","El Haria","El Khroub","Hamma Bouziane","Ibn Ziad","Mesaoud Boudjeriou","Ouled Rahmoune","Zighoud Youcef"],"Medea":["Ain Boucif","Ain Ouksir","Aissaouia","Aziz","Baata","Benchicao","Beni Slimane","Berrouaghia","Bir Ben Laabed","Boghar","Bouaiche","Bouaichoune","Bouchrahil","Boughezoul","Bouskene","Chahbounia","Chelalet El Adhaoura","Cheniguel","Damiat","Derrag","Deux Bassins","Djouab","Draa Essamar","El Azizia","El Guelbelkebir","El Hamdania","El Omaria","El Ouinet","Hannacha","Kef Lakhdar","Khams Djouamaa","Ksar El Boukhari","Medea","Medjebar","Meftaha","Meghraoua","Mezerena","Mihoub","Ouamri","Oued Harbil","Ouled Antar","Ouled Bouachra","Ouled Brahim","Ouled Deide","Ouled Hellal","Ouled Maaref","Oum El Djalil","Ouzera","Rebaia","Saneg","Sedraia","Seghouane","Si Mahdjoub","Sidi Damed","Sidi Errabia","Sidi Naamane","Sidi Zahar","Sidi Ziane","Souagui","Tablat","Tafraout","Tamesguida","Tlatet Eddoair","Zoubiria"],"Mostaganem":["Abdelmalek Ramdane","Achaacha","Ain Boudinar","Ain Nouissy","Ain Sidi Cherif","Ain Tadles","Bouguirat","El Hassiane","Fornaka","Hadjadj","Hassi Maameche","Khadra","Kheiredine","Mansourah","Mesra","Mezghrane","Mostaganem","Nekmaria","Oued El Kheir","Ouled Boughalem","Ouled Maallah","Safsaf","Sayada","Sidi Ali","Sidi Bellater","Sidi Lakhdar","Sirat","Souaflia","Sour","Stidia","Tazgait","Touahria"],"MSila":["Ain El Hadjel","Ain El Melh","Ain Errich","Ain Fares","Ain Khadra","Belaiba","Ben Srour","Beni Ilmane","Benzouh","Berhoum","Bir Foda","Bou Saada","Bouti Sayah","Chellal","Dehahna","Djebel Messaad","El Hamel","El Houamed","Hammam Dhalaa","Khettouti Sed Djir","Khoubana","Maadid","Maarif","Magra","Mcif","Medjedel","Msila","Mtarfa","Ouanougha","Oued Chair","Ouled Addi Guebala","Ouled Atia","Ouled Derradj","Ouled Madhi","Ouled Mansour","Ouled Sidi Brahim","Ouled Slimane","Oultene","Sidi Aissa","Sidi Ameur","Sidi Hadjeres","Sidi Mhamed","Slim","Souamaa","Tamsa","Tarmount","Zarzour"],"Mascara":["Ain Fares","Ain Fekan","Ain Ferah","Ain Frass","Alaimia","Aouf","Benian","Bou Hanifia","Bou Henni","Chorfa","El Bordj","El Gaada","El Ghomri","El Hachem","El Keurt","El Mamounia","El Menaouer","Ferraguig","Froha","Gharrous","Gherdjoum","Ghriss","Guettena","Hacine","Khalouia","Makdha","Maoussa","Mascara","Matemore","Moctadouz","Mohammadia","Nesmot","Oggaz","Oued El Abtal","Oued Taria","Ras Ain Amirouche","Sedjerara","Sehailia","Sidi Abdeldjebar","Sidi Abdelmoumene","Sidi Boussaid","Sidi Kada","Sig","Teghennif","Tizi","Zahana","Zelmata"],"Ouargla":["Ain Beida","El Borma","Hassi Ben Abdellah","Hassi Messaoud","Ngoussa","Ouargla","Rouissat","Sidi Khouiled"],"Oran":["Ain Biya","Ain Kerma","Ain Turk","Arzew","Ben Freha","Bethioua","Bir El Djir","Boufatis","Bousfer","Boutlelis","El Ancar","El Braya","El Karma","Es Senia","Gdyel","Hassi Ben Okba","Hassi Bounif","Hassi Mefsoukh","Marsat El Hadjadj","Mers El Kebir","Messerghin","Oran","Oued Tlelat","Sidi Ben Yabka","Sidi Chami","Tafraoui"],"El Bayadh":["Ain El Orak","Arbaouat","Boualem","Bougtoub","Boussemghoun","Brezina","Cheguig","Chellala","El Abiodh Sidi Cheikh","El Bayadh","El Bnoud","El Kheither","El Mehara","Ghassoul","Kef El Ahmar","Krakda","Rogassa","Sidi Ameur","Sidi Slimane","Sidi Tifour","Stitten","Tousmouline"],"Illizi":["Djanet","Illizi","In Amenas","In Guezzam"],"Bordj Bou Arreridj":["Ain Taghrout","Ain Tesra","Belimour","Ben Daoud","Bir Kasdali","Bordj Bou Arreridj","Bordj Ghdir","Bordj Zemoura","Colla","Djaafra","El Ach","El Achir","El Anseur","El Hamadia","El Main","El Mhir","Ghilassa","Haraza","Hasnaoua","Khelil","Ksour","Mansoura","Medjana","Ouled Brahem","Ouled Dahmane","Ouled Sidi Brahim","Rabta","Ras El Oued","Sidi Embarek","Tafreg","Taglait","Teniet En Nasr","Tesmart","Tixter"],"Boumerdes":["Afir","Ammal","Baghlia","Ben Choud","Beni Amrane","Bordj Menaiel","Boudouaou","Boudouaou El Bahri","Boumerdes","Bouzegza Keddara","Chabet El Ameur","Corso","Dellys","Djinet","El Kharrouba","Hammedi","Isser","Khemis El Khechna","Laghata","Larbatache","Naciria","Ouled Aissa","Ouled Hedadj","Ouled Moussa","Si Mustapha","Sidi Daoud","Souk El Had","Taourga","Thenia","Tidjelabine","Timezrit","Zemmouri"],"El Tarf":["Ain El Assel","Ain Kerma","Asfour","Ben Mhidi","Berrihane","Bougous","Bouhadjar","Bouteldja","Chebaita Mokhtar","Chefia","Chihani","Drean","Echatt","El Aioun","El Kala","El Tarf","Hammam Beni Salah","Lac Des Oiseaux","Oued Zitoun","Raml Souk","Souarekh","Zerizer","Zitouna"],"Tindouf":["Tindouf"],"Tissemsilt":["Ammari","Beni Chaib","Beni Lahcene","Bordj Bou Naama","Bordj El Emir Abdelkader","Boucaid","Khemisti","Larbaa","Lardjem","Layoune","Lazharia","Maasem","Melaab","Ouled Bessem","Sidi Abed","Sidi Boutouchent","Sidi Lantri","Sidi Slimane","Tamalaht","Theniet El Had","Tissemsilt","Youssoufia"],"El Oued":["Bayadha","Beni Guecha","Debila","Douar El Ma","El Ogla","El Oued","Guemar","Hamraia","Hassani Abdelkrim","Hassi Khelifa","Kouinine","Magrane","Mih Ouansa","Nakhla","Oued El Alenda","Ourmas","Reguiba","Robbah","Sidi Aoun","Taghzout","Taleb Larbi","Trifaoui"],"Khenchela":["Ain Touila","Babar","Baghai","Bouhmama","Chelia","Cherchar","Djellal","El Hamma","El Mahmal","El Oueldja","Ensigha","Kais","Khenchela","Khirane","Msara","Mtoussa","Ouled Rechache","Remila","Tamza","Taouzianat","Yabous"],"Souk Ahras":["Ain Soltane","Ain Zana","Bir Bouhouche","Drea","Haddada","Hanancha","Khedara","Khemissa","Mdaourouche","Mechroha","Merahna","Oued Keberit","Ouled Driss","Ouled Moumen","Oum El Adhaim","Quillen","Ragouba","Safel El Ouiden","Sedrata","Sidi Fredj","Souk Ahras","Taoura","Terraguelt","Tiffech","Zaarouria","Zouabi"],"Tipaza":["Aghabal","Ahmer El Ain","Ain Tagourait","Attatba","Beni Milleuk","Bou Haroun","Bou Ismail","Bourkika","Chaiba","Cherchell","Damous","Douaouda","Fouka","Gouraya","Hadjerat Ennous","Hadjout","Khemisti","Kolea","Larhat","Menaceur","Messelmoun","Meurad","Nodor","Sidi Amar","Sidi Ghiles","Sidi Rached","Sidi Semiane","Tipaza"],"Mila":["Ahmed Rachedi","Ain Beida Harriche","Ain Mellouk","Ain Tine","Amira Arras","Benyahia Abderrahmane","Bouhatem","Chelghoum Laid","Chigara","Derradji Bousselah","El Mechira","Elayadi Barbes","Ferdjioua","Grarem Gouga","Hamala","Mila","Minar Zarza","Oued Athmenia","Oued Endja","Oued Seguen","Ouled Khalouf","Rouached","Sidi Khelifa","Sidi Merouane","Tadjenanet","Tassadane Haddada","Telerghma","Terrai Bainen","Tessala Lamatai","Tiberguent","Yahia Beniguecha","Zeghaia"],"Ain Defla":["Ain Benian","Ain Bouyahia","Ain Defla","Ain Lechiakh","Ain Soltane","Ain Torki","Arib","Barbouche","Bathia","Belaas","Ben Allal","Bir Ouled Khelifa","Bordj Emir Khaled","Boumedfaa","Bourached","Djelida","Djemaa Ouled Chikh","Djendel","El Abadia","El Amra","El Attaf","El Hassania","El Maine","Hammam Righa","Hoceinia","Khemis Miliana","Mekhatria","Miliana","Oued Chorfa","Oued Djemaa","Rouina","Sidi Lakhdar","Tachta Zegagha","Tarik Ibn Ziad","Tiberkanine","Zeddine"],"Naama":["Ain Ben Khelil","Ain Sefra","Assela","Djeniane Bourzeg","El Biod","Kasdir","Makman Ben Amer","Mechria","Moghrar","Naama","Sfissifa","Tiout"],"Ain Temouchent":["Aghlal","Ain El Arbaa","Ain Kihal","Ain Temouchent","Ain Tolba","Aoubellil","Beni Saf","Bou Zedjar","Chaabet El Ham","Chentouf","El Amria","El Emir Abdelkader","El Malah","El Messaid","Hammam Bouhadjar","Hassasna","Hassi El Ghella","Oued Berkeche","Oued Sabah","Ouled Boudjemaa","Ouled Kihal","Oulhaca El Gheraba","Sidi Ben Adda","Sidi Boumediene","Sidi Safi","Tadmaya","Tamzoura","Terga"],"Ghardaia":["Berriane","Bounoura","Dhayet Bendhahoua","El Atteuf","El Guerrara","Ghardaia","Mansoura","Metlili","Sebseb","Zelfana"],"Relizane":["Ain Rahma","Ain Tarek","Ammi Moussa","Belaassel Bouzegza","Bendaoud","Beni Dergoun","Beni Zentis","Dar Ben Abdellah","Djidiouia","El Guettar","El Hamadna","El Hassi","El Matmar","El Ouldja","Had Echkalla","Hamri","Kalaa","Lahlef","Mazouna","Mediouna","Mendes","Merdja Sidi Abed","Ouarizane","Oued El Djemaa","Oued Essalem","Oued Rhiou","Ouled Aiche","Ouled Sidi Mihoub","Ramka","Relizane","Sidi Khettab","Sidi Lazreg","Sidi Mhamed Ben Ali","Sidi Mhamed Ben Aouda","Sidi Saada","Souk El Haad","Yellel","Zemmoura"],"Timimoun":["Aougrout","Charouine","Deldoul","Ksar Kaddour","Metarfa","Ouled Aissa","Ouled Said","Talmine","Timimoun","Tinerkouk"],"Ouled Djellal":["Besbes","Chaiba","Doucen","Ouled Djellal","Ras El Miad","Sidi Khaled"],"Beni Abbes":["Beni Abbes","Beni-Ikhlef","El Ouata","Igli","Kerzaz","Ksabi","Ouled-Khodeir","Tamtert","Timoudi"],"In Salah":["In Salah","Foggaret Ez Zoua","In Ghar","Arak","Tidikelt"],"In Guezzam":["In Guezzam","Tin Zaouatine"],"Touggourt":["Touggourt","Temacine","Nezla","Megarine","El-Hadjira","Taibet","Tebesbest","Blidet Amor","Benaceur","Sidi Slimane","Zaouia El Abidia","M'naguer"],"El Mghair":["El Mghair","Djamaa","Sidi Khellil","Oum Touyour","El Menia","Sidi Amrane","Hassi Gara","El M'Ghair"],"El Meniaa":["El Meniaa","Hassi Fehal","Bordj Badji Mokhtar","Timiaouine"]};
+
+function fillCommune(wilaya){
+  const sel = document.getElementById('fCommune');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">اختر البلدية</option>';
+  const list = NOEST_COMMUNES[wilaya];
+  if(!list) return;
+  list.forEach(nm=>{
+    const op = document.createElement('option');
+    op.value = nm; op.textContent = nm;
+    sel.appendChild(op);
+  });
+}
+
+document.getElementById('year').textContent = new Date().getFullYear();
+document.getElementById('fWilaya').innerHTML = '<option value="">اختر الولاية</option>' + WILAYAS.map(w=>`<option>${w}</option>`).join('');
+document.getElementById('fWilaya').addEventListener('change', function(){ fillCommune(this.value); });
+
+let PRODUCTS = [], CATEGORIES = [], ACTIVE_CAT = 'all', DELIVERY_SETTINGS = null;
+const TONE_CYCLE = ['', 'amber-tone'];
+
+function rowToProduct(r){
+  return {
+    id: r.id, name: r.name, category: r.category,
+    priceNew: Number(r.price_new), priceOld: r.price_old!=null?Number(r.price_old):null,
+    badge: r.badge, image: r.image, images: r.images||(r.image?[r.image]:[]),
+    description: r.description||'', features: r.features||[],
+    active: r.active!==false,
+    deliveryEnabled: !!r.delivery_enabled,
+    deliveryPrice: r.delivery_price!=null?Number(r.delivery_price):null,
+    deliveryPriceStopdesk: r.delivery_price_stopdesk!=null?Number(r.delivery_price_stopdesk):null,
+    deliveryByWilaya: r.delivery_by_wilaya||{},
+    deliveryByWilayaStopdesk: r.delivery_by_wilaya_stopdesk||{},
+    bundles: r.bundles||[],
+    variants: (r.variants||[]).map(v=>({
+      ...v,
+      options: (v.options||[]).map(o=>({...o, outOfStock: !!(o.outOfStock||o.out_of_stock||o.oos)}))
+    }))
+  };
+}
+
+async function loadPixelSettings(){
+  try{
+    const {data,error} = await sb.from('app_settings').select('fb_pixels,tiktok_pixels,fb_pixel_id,fb_pixel_enabled,tiktok_pixel_id,tiktok_pixel_enabled').eq('id',1).single();
+    if(error||!data) return null;
+    const fbPixels = data.fb_pixels || (data.fb_pixel_id?[{id:data.fb_pixel_id,enabled:!!data.fb_pixel_enabled}]:[]);
+    const tiktokPixels = data.tiktok_pixels || (data.tiktok_pixel_id?[{id:data.tiktok_pixel_id,enabled:!!data.tiktok_pixel_enabled}]:[]);
+    return {fbPixels, tiktokPixels};
+  }catch(e){ return null; }
+}
+function injectFbPixel(id){
+  if(!id) return;
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', id); fbq('track', 'PageView');
+}
+function injectTtqPixel(id){
+  if(!id) return;
+  !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)}}(window,document,'ttq');
+  ttq.load(id); ttq.page();
+}
+let PIXELS = {fbPixels:[], tiktokPixels:[]};
+async function initMarketingPixels(){
+  const p = await loadPixelSettings();
+  if(!p) return;
+  PIXELS = p;
+  (p.fbPixels||[]).forEach(px=>{ if(px.enabled && px.id) injectFbPixel(px.id); });
+  (p.tiktokPixels||[]).forEach(px=>{ if(px.enabled && px.id) injectTtqPixel(px.id); });
+}
+function trackViewContent(product){
+  try{
+    if(window.fbq) fbq('track','ViewContent',{content_ids:[product.id],content_name:product.name,value:product.priceNew,currency:'DZD'});
+    if(window.ttq) ttq.track('ViewContent',{content_id:product.id,content_name:product.name,value:product.priceNew,currency:'DZD'});
+  }catch(e){}
+}
+function trackPurchase(order){
+  try{
+    if(window.fbq) fbq('track','Purchase',{content_ids:[order.product_id],content_name:order.product_name,value:order.total,currency:'DZD'});
+    if(window.ttq) ttq.track('CompletePayment',{content_id:order.product_id,content_name:order.product_name,value:order.total,currency:'DZD'});
+  }catch(e){}
+}
+
+async function loadDeliverySettings(){
+  const {data,error} = await sb.from('delivery_settings').select('*').eq('id',1).single();
+  if(error||!data) return {defaultPrice:400, defaultPriceStopdesk:200, byWilaya:{}, byWilayaStopdesk:{}};
+  return {
+    defaultPrice: Number(data.default_price??400),
+    defaultPriceStopdesk: Number(data.default_price_stopdesk??200),
+    byWilaya: data.by_wilaya||{}, byWilayaStopdesk: data.by_wilaya_stopdesk||{}
+  };
+}
+function getDeliveryPrice(p, s, wilaya, type){
+  const isStop = type==='bureau';
+  const byW = isStop ? (s.byWilayaStopdesk||{}) : (s.byWilaya||{});
+  if(p.deliveryEnabled){
+    const pByW = isStop ? p.deliveryByWilayaStopdesk : p.deliveryByWilaya;
+    if(wilaya && pByW && pByW[wilaya]!=null) return Number(pByW[wilaya]);
+    const pP = isStop ? p.deliveryPriceStopdesk : p.deliveryPrice;
+    if(pP!=null) return Number(pP);
+  }
+  if(wilaya && byW[wilaya]!=null) return Number(byW[wilaya]);
+  return Number(isStop ? (s.defaultPriceStopdesk||0) : (s.defaultPrice||0));
+}
+
+function validatePhone(phone){
+  const c = phone.replace(/\s+/g,'');
+  if(!/^[0-9]{10}$/.test(c)) return 'رقم الهاتف يجب أن يكون 10 أرقام';
+  if(!/^0[567]/.test(c)) return 'يجب أن يبدأ بـ 05 أو 06 أو 07';
+  return null;
+}
+
+let APP_SETTINGS = {};
+async function loadAppSettings(){
+  try{
+    const {data,error} = await sb.from('app_settings').select('*').eq('id',1).single();
+    if(!error && data) APP_SETTINGS = data;
+  }catch(e){}
+}
+
+function buildWhatsAppLink(order){
+  const msg = encodeURIComponent(
+    `مرحبا، لقد أتممت طلبي:\n` +
+    `📦 المنتج: ${order.product_name}\n` +
+    `👤 الاسم: ${order.name}\n` +
+    `📞 الهاتف: ${order.phone}\n` +
+    `📍 الولاية: ${order.wilaya}\n` +
+    `💰 المبلغ: ${order.total} دج\n` +
+    `🆔 رقم الطلب: #${order.id.slice(-6).toUpperCase()}`
+  );
+  const storePhone = (APP_SETTINGS && (APP_SETTINGS.whatsapp || APP_SETTINGS.phone)) || '';
+  return `https://wa.me/${storePhone.replace(/\D/g,'')}?text=${msg}`;
+}
+
+function showSuccessScreen(order, p){
+  const zone = document.getElementById('orderZone');
+  const waLink = buildWhatsAppLink(order);
+  zone.innerHTML = `
+    <div class="success-screen">
+      <div class="s-icon">🎉</div>
+      <div class="s-title">تم استلام طلبك!</div>
+      <div class="s-sub">سنتصل بك قريبًا على <b>${esc(order.phone)}</b> لتأكيد التوصيل.<br>شكرًا لثقتكم في <b>QuickShop</b> 💚</div>
+      <div class="s-summary">
+        <div>📦 <strong>المنتج:</strong> ${esc(order.product_name)}</div>
+        <div>👤 <strong>الاسم:</strong> ${esc(order.name)}</div>
+        <div>📍 <strong>الولاية:</strong> ${esc(order.wilaya)}</div>
+        <div>💰 <strong>المجموع:</strong> ${fmt(order.total)} دج</div>
+        <div>🆔 <strong>رقم الطلب:</strong> #${esc(order.id.slice(-6).toUpperCase())}</div>
+      </div>
+      ${(APP_SETTINGS && (APP_SETTINGS.whatsapp || APP_SETTINGS.phone)) ? `
+      <a href="${waLink}" target="_blank" class="wa-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        تأكيد الطلب عبر واتساب
+      </a>` : ''}
+      <span class="continue-btn" onclick="document.getElementById('overlay').classList.remove('show')">متابعة التسوق →</span>
+    </div>`;
+}
+
+function updateOGTags(product){
+  const setMeta = (prop, val) => {
+    let el = document.querySelector(`meta[property="${prop}"]`)||document.querySelector(`meta[name="${prop}"]`);
+    if(el) el.setAttribute('content', val);
+  };
+  setMeta('og:title', `${product.name} — QuickShop`);
+  setMeta('og:description', product.description||'تسوق بسهولة وادفع عند الاستلام');
+  setMeta('og:image', product.image||product.images&&product.images[0]||'');
+  setMeta('og:url', window.location.href);
+}
+
+// UTM persistence
+(function persistUTM(){
+  const params = new URLSearchParams(location.search);
+  const utm = {};
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','ttclid','gclid'].forEach(k=>{
+    if(params.get(k)) utm[k] = params.get(k);
+  });
+  if(Object.keys(utm).length){
+    try{ sessionStorage.setItem('qs_utm', JSON.stringify(utm)); }catch(e){}
+  }
+})();
+
+function detectOrderSource(){
+  const params = new URLSearchParams(window.location.search);
+  // Check current URL params first
+  const utm = (params.get('utm_source')||'').toLowerCase();
+  if(utm==='facebook'||utm==='instagram'||utm==='meta') return 'meta';
+  if(params.has('fbclid')) return 'meta';
+  if(utm==='tiktok'||params.has('ttclid')) return 'tiktok';
+  if(utm==='google'||params.has('gclid')) return 'google';
+  const src = params.get('src');
+  if(src) return src;
+  // Fallback to sessionStorage UTM
+  try{
+    const stored = JSON.parse(sessionStorage.getItem('qs_utm')||'{}');
+    const storedUtm = (stored.utm_source||'').toLowerCase();
+    if(storedUtm==='facebook'||storedUtm==='instagram'||storedUtm==='meta') return 'meta';
+    if(stored.fbclid) return 'meta';
+    if(storedUtm==='tiktok'||stored.ttclid) return 'tiktok';
+    if(storedUtm==='google'||stored.gclid) return 'google';
+    if(stored.utm_source) return stored.utm_source;
+  }catch(e){}
+  return document.referrer ? 'referral' : 'direct';
+}
+const ORDER_SOURCE = detectOrderSource();
+
+async function loadCategoriesFromProducts(){
+  const seen = new Map();
+  PRODUCTS.forEach(p=>{ if(p.category && !seen.has(p.category)) seen.set(p.category, {id:p.category, name:p.category}); });
+  CATEGORIES = Array.from(seen.values());
+  renderCatStrip(); renderCatGrid(); renderNav(); renderFooterCats();
+}
+function catIcon(){ return `<svg viewBox="0 0 24 24" stroke-width="1.3"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 10h6M9 14h6"/></svg>`; }
+
+function renderCatStrip(){
+  const strip = document.getElementById('catStrip');
+  if(!CATEGORIES.length){ strip.innerHTML=''; return; }
+  strip.innerHTML = `<div class="cat-chip active" data-cat="all"><span class="dot">${catIcon()}</span>الكل</div>` +
+    CATEGORIES.map(c=>`<div class="cat-chip" data-cat="${c.id}"><span class="dot">${catIcon()}</span>${c.name}</div>`).join('');
+  strip.querySelectorAll('[data-cat]').forEach(el=>el.onclick=()=>filterTo(el.dataset.cat));
+}
+function renderCatGrid(){
+  const grid = document.getElementById('catGrid');
+  if(!CATEGORIES.length){ grid.innerHTML = `<div class="empty-note">لا توجد فئات بعد</div>`; return; }
+  grid.innerHTML = CATEGORIES.map((c,i)=>`
+    <div class="cat-card" data-cat="${c.id}">
+      <div class="art ${TONE_CYCLE[i%2]}"><div class="power-dot"></div>${catIcon()}</div>
+      <h3>${c.name}</h3>
+    </div>`).join('');
+  grid.querySelectorAll('[data-cat]').forEach(el=>el.onclick=()=>filterTo(el.dataset.cat));
+}
+function renderNav(){
+  const primary = document.getElementById('primaryNav'), mobile = document.getElementById('mobileNav');
+  primary.innerHTML = `<li><a class="all-link active" data-cat="all">الكل</a></li>` + CATEGORIES.map(c=>`<li><a data-cat="${c.id}">${c.name}</a></li>`).join('');
+  mobile.innerHTML = `<a class="all-link" data-cat="all">الكل</a>` + CATEGORIES.map(c=>`<a data-cat="${c.id}">${c.name}</a>`).join('');
+  document.querySelectorAll('[data-cat]').forEach(el=>el.addEventListener('click',()=>{ filterTo(el.dataset.cat); mobile.classList.remove('open'); }));
+}
+function renderFooterCats(){
+  const ul = document.getElementById('footerCats');
+  ul.innerHTML = CATEGORIES.slice(0,5).map(c=>`<li><a data-cat="${c.id}">${c.name}</a></li>`).join('') || '<li><a data-cat="all">كل المنتجات</a></li>';
+  ul.querySelectorAll('[data-cat]').forEach(el=>el.onclick=()=>filterTo(el.dataset.cat));
+}
+function filterTo(catId){
+  ACTIVE_CAT = catId;
+  if(catId && catId !== 'all') QS_Engine.track('filter_cat', { category: catId });
+  document.querySelectorAll('.primary-nav a, .mobile-nav a, .cat-chip').forEach(a=>a.classList.toggle('active', a.dataset.cat===catId));
+  const catObj = CATEGORIES.find(c=>c.id===catId);
+  const isPersonalized = QS_Engine.profile().totalEvents >= 3;
+  document.getElementById('gridEyebrow').textContent = catId==='all' ? (isPersonalized ? '✨ مرتّب حسب اهتماماتك' : '🔥 الأكثر طلبًا') : 'الفئة';
+  document.getElementById('gridTitle').textContent = catId==='all' ? 'منتجات تستاهل التجربة.' : catObj ? catObj.name : 'المنتجات';
+  renderProductGrid();
+  document.getElementById('featured').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function loadProducts(){
+  const {data} = await sb.from('products').select('*').order('sort_order', {ascending:true, nullsFirst:false});
+  PRODUCTS = (data||[]).map(rowToProduct);
+  window.PRODUCTS = PRODUCTS; // expose for QS_Engine
+  await loadCategoriesFromProducts();
+  renderProductGrid();
+  renderRecentStrip();
+  renderForYouStrip();
+  openProductFromUrl();
+  setupScrollTracking();
+  if(PRODUCTS.length) updateOGTags(PRODUCTS[0]);
+}
+function renderProductGrid(){
+  const grid = document.getElementById('productGrid');
+  const raw = (ACTIVE_CAT==='all' ? PRODUCTS : PRODUCTS.filter(p=>p.category===ACTIVE_CAT)).filter(p=>p.active!==false);
+  const list = QS_Engine.rank(raw); // personalized ordering
+  if(!list.length){ grid.innerHTML = `<div class="empty-note">لا توجد منتجات في هذه الفئة بعد</div>`; return; }
+  grid.innerHTML = list.map(p=>{
+    const img1 = p.images[0]||''; const img2 = p.images[1]||'';
+    const statusTag = p.badge ? `<span class="tag sale">${esc(p.badge)}</span>` : '';
+    return `
+    <div class="product-card" data-id="${esc(p.id)}">
+      <div class="product-media">
+        <div class="art art-main">${img1?`<img src="${encodeURI(img1)}" alt="${esc(p.name)}" loading="lazy">`:''}</div>
+        ${img2?`<div class="art art-alt"><img src="${encodeURI(img2)}" alt="${esc(p.name)}" loading="lazy"></div>`:''}
+        <div class="tag-stack">${statusTag}</div>
+        <div class="quick-add" data-open="${esc(p.id)}">⚡ اطلب الآن</div>
+      </div>
+      <div class="product-info">
+        <h3>${esc(p.name)}</h3>
+        <div class="sub">${esc((p.description||'').slice(0,50))}</div>
+        <div class="price">${fmt(p.priceNew)}${p.priceOld?`<span class="old">${fmt(p.priceOld)}</span>`:''}<span class="cur"> دج</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.product-card').forEach(c=>{
+    c.querySelector('.quick-add').addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const p = PRODUCTS.find(x=>x.id===c.dataset.id);
+      if(p) QS_Engine.track('quick_add', { id: p.id, category: p.category, price: p.priceNew });
+      openSheet(c.dataset.id);
+    });
+    c.addEventListener('click', ()=> openSheet(c.dataset.id));
+  });
+  setupScrollTracking();
+}
+
+function renderForYouStrip(){
+  const section = document.getElementById('forYouSection');
+  const strip = document.getElementById('forYouStrip');
+  const forYou = QS_Engine.getForYou(PRODUCTS, 6);
+  if(!forYou.length){ section.style.display='none'; return; }
+  section.style.display='block';
+  strip.innerHTML = forYou.map(p=>{
+    const img = p.images&&p.images[0] || p.image || '';
+    const reasons = QS_Engine.explain(p);
+    const whyText = reasons.slice(0,2).join(' · ');
+    return `<div class="fycard" data-id="${esc(p.id)}">
+      <div class="fycard-img">${img?`<img src="${encodeURI(img)}" alt="${esc(p.name)}" loading="lazy">`:'<div style="height:100%;background:var(--teal-tint);"></div>'}</div>
+      <div class="fycard-body">
+        <div class="fycard-name">${esc(p.name)}</div>
+        <div class="fycard-price">${fmt(p.priceNew)} دج</div>
+        ${whyText?`<div class="fycard-why">💡 ${esc(whyText)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  strip.querySelectorAll('[data-id]').forEach(el=>el.addEventListener('click',()=>openSheet(el.dataset.id)));
+}
+function openProductFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const pid = params.get('id') || params.get('product');
+  if(pid && PRODUCTS.find(p=>p.id===pid)) openSheet(pid);
+}
+
+const RECENT_KEY = 'qs_recently_viewed';
+function trackView(id){
+  let list=[]; try{ list = JSON.parse(localStorage.getItem(RECENT_KEY))||[]; }catch(e){}
+  list = list.filter(x=>x!==id); list.unshift(id); list = list.slice(0,8);
+  try{ localStorage.setItem(RECENT_KEY, JSON.stringify(list)); }catch(e){}
+}
+function getRecentIds(){ try{ return JSON.parse(localStorage.getItem(RECENT_KEY))||[]; }catch(e){ return []; } }
+function miniCard(p){
+  const img = p.images[0]||'';
+  return `<div class="cs-card" data-id="${esc(p.id)}">
+    <div class="art">${img?`<img src="${encodeURI(img)}" alt="${esc(p.name)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;">`:catIcon()}</div>
+    <h4>${esc(p.name)}</h4><div class="cs-price">${fmt(p.priceNew)} دج</div></div>`;
+}
+function renderRecentStrip(){
+  const wrap = document.getElementById('recentStrip');
+  const ids = getRecentIds().filter(id=>id!==(CURRENT_PRODUCT&&CURRENT_PRODUCT.id));
+  const items = ids.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean).slice(0,6);
+  if(!items.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  document.getElementById('recentRow').innerHTML = items.map(miniCard).join('');
+  document.getElementById('recentRow').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>openSheet(el.dataset.id));
+}
+function renderCrossSell(p){
+  const zone = document.getElementById('crossSellZone');
+  const related = PRODUCTS.filter(x=>x.id!==p.id && x.category===p.category && x.active!==false).slice(0,6);
+  if(!related.length){ zone.innerHTML=''; return; }
+  zone.innerHTML = `<div class="cs-title" style="margin-top:6px;">✨ قد يعجبك أيضًا</div><div class="cs-row">${related.map(miniCard).join('')}</div>`;
+  zone.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>openSheet(el.dataset.id));
+}
+
+let CURRENT_PRODUCT = null;
+let SELECTED_VARIANT_LABELS = {}, SELECTED_VARIANT_PRICE = null, SELECTED_BUNDLE = null, QTY = 1;
+let DELIVERY_TYPE = 'home';
+let cartSnapshotKey = null;
+let orderStartTime = 0;
+let _deliverySettings = {defaultPrice:400, defaultPriceStopdesk:200, byWilaya:{}, byWilayaStopdesk:{}};
+
+async function openSheet(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  CURRENT_PRODUCT = p;
+  SELECTED_VARIANT_LABELS = {}; SELECTED_VARIANT_PRICE = null; SELECTED_BUNDLE = null; QTY = 1; DELIVERY_TYPE='home';
+  cartSnapshotKey = null; orderStartTime = Date.now();
+
+  if(!DELIVERY_SETTINGS) DELIVERY_SETTINGS = await loadDeliverySettings();
+  _deliverySettings = DELIVERY_SETTINGS;
+
+  document.getElementById('sheetImg').src = p.images[0]||'';
+  renderGalleryDots(p);
+  document.getElementById('sheetBadgeZone').innerHTML = p.badge ? `<span class="sheet-badge">${esc(p.badge)}</span>` : '';
+  document.getElementById('sheetName').textContent = p.name;
+  document.getElementById('sheetDesc').textContent = p.description||'';
+  document.getElementById('sheetFeatures').innerHTML = (p.features||[]).map(f=>`<li>${esc(f)}</li>`).join('');
+  document.getElementById('deliveryToggle').querySelectorAll('.delivery-opt').forEach(el=>el.classList.toggle('active', el.dataset.type==='home'));
+
+  renderVariants(p); renderBundles(p); updatePriceDisplay();
+  renderCrossSell(p);
+  document.getElementById('orderForm').reset();
+  document.getElementById('phoneErr').style.display='none';
+  document.getElementById('fPhone').classList.remove('error');
+  document.getElementById('fastWarning').style.display='none';
+  document.getElementById('formMsg').className='msg';
+
+  trackView(id); trackViewContent(p);
+  // AddToCart pixel events
+  try{
+    if(typeof fbq !== 'undefined'){
+      fbq('track','AddToCart',{
+        content_ids:[p.id],
+        content_name:p.name,
+        content_type:'product',
+        value:p.priceNew,
+        currency:'DZD'
+      });
+    }
+    if(typeof ttq !== 'undefined'){
+      ttq.track('AddToCart',{
+        content_id:p.id,
+        content_name:p.name,
+        price:p.priceNew,
+        currency:'DZD',
+        quantity:1
+      });
+    }
+  }catch(e){}
+  QS_Engine.track('open_sheet', { id: p.id, category: p.category, price: p.priceNew });
+  updateOGTags(p);
+  renderForYouStrip(); // refresh "for you" based on new signal
+  document.getElementById('overlay').classList.add('show');
+}
+
+function renderGalleryDots(p){
+  const dots = document.getElementById('galleryDots');
+  if(p.images.length<2){ dots.style.display='none'; return; }
+  dots.style.display='flex';
+  dots.innerHTML = p.images.map((_,i)=>`<button class="${i===0?'active':''}" data-gi="${i}"></button>`).join('');
+  dots.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    document.getElementById('sheetImg').src = p.images[Number(b.dataset.gi)];
+    dots.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+  });
+}
+
+function renderVariants(p){
+  const zone = document.getElementById('variantsZone');
+  if(!p.variants || !p.variants.length){ zone.innerHTML=''; return; }
+  zone.innerHTML = p.variants.map((v,vi)=>`
+    <div class="variant-block">
+      <div class="variant-label">${v.name}</div>
+      <div class="variant-opts">${(v.options||[]).map((o,oi)=>`
+        <div class="variant-opt ${o.outOfStock?'oos':''}" data-vi="${vi}" data-oi="${oi}" data-price="${o.price??''}">${o.value}</div>
+      `).join('')}</div>
+    </div>`).join('');
+  zone.querySelectorAll('.variant-opt').forEach(btn=>{
+    if(btn.classList.contains('oos')) return;
+    btn.addEventListener('click', ()=>{
+      const vi = Number(btn.dataset.vi);
+      zone.querySelectorAll(`.variant-opt[data-vi="${vi}"]`).forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const variantType = p.variants[vi];
+      SELECTED_VARIANT_LABELS[variantType.name] = variantType.options[Number(btn.dataset.oi)].value;
+      if(btn.dataset.price) SELECTED_VARIANT_PRICE = Number(btn.dataset.price);
+      updatePriceDisplay();
+    });
+  });
+  p.variants.forEach((v,vi)=>{
+    const firstOk = (v.options||[]).findIndex(o=>!o.outOfStock);
+    if(firstOk>=0){
+      const btn = zone.querySelector(`.variant-opt[data-vi="${vi}"][data-oi="${firstOk}"]`);
+      if(btn) btn.click();
+    }
+  });
+}
+
+function renderBundles(p){
+  const zone = document.getElementById('bundlesZone');
+  if(!p.bundles || !p.bundles.length){ zone.innerHTML=''; return; }
+  zone.innerHTML = `<div class="bundle-block"><div class="variant-label">عروض الكمية</div>` +
+    p.bundles.map((b,bi)=>`<div class="bundle-opt" data-bi="${bi}"><span>${b.qty}× — وفّر أكثر</span><span>${fmt(b.price)} دج</span></div>`).join('') +
+    `<div class="bundle-opt" data-bi="-1">قطعة واحدة (بدون عرض)</div></div>`;
+  zone.querySelectorAll('.bundle-opt').forEach(el=>{
+    el.onclick = ()=>{
+      zone.querySelectorAll('.bundle-opt').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      const bi = Number(el.dataset.bi);
+      SELECTED_BUNDLE = bi>=0 ? p.bundles[bi] : null;
+      QTY = SELECTED_BUNDLE ? SELECTED_BUNDLE.qty : 1;
+      updatePriceDisplay();
+    };
+  });
+}
+
+function updatePriceDisplay(){
+  const p = CURRENT_PRODUCT;
+  const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
+  document.getElementById('sheetPrice').innerHTML = SELECTED_BUNDLE
+    ? `${fmt(SELECTED_BUNDLE.price)} دج`
+    : `${fmt(unitPrice)}${p.priceOld?`<span class="old">${fmt(p.priceOld)} دج</span>`:''} دج`;
+  updateTotals();
+}
+function updateTotals(){
+  const p = CURRENT_PRODUCT;
+  const wilaya = document.getElementById('fWilaya').value;
+  const deliveryPrice = wilaya ? getDeliveryPrice(p, _deliverySettings, wilaya, DELIVERY_TYPE) : 0;
+  const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
+  const productTotal = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : unitPrice*QTY;
+  document.getElementById('totalPrice').textContent = fmt(productTotal + deliveryPrice) + ' دج' + (wilaya ? '' : ' (+ توصيل)');
+}
+document.getElementById('fWilaya').addEventListener('change', updateTotals);
+document.getElementById('deliveryToggle').querySelectorAll('.delivery-opt').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.delivery-opt').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    DELIVERY_TYPE = el.dataset.type;
+    updateTotals();
+  });
+});
+
+document.getElementById('closeSheet').onclick = ()=>document.getElementById('overlay').classList.remove('show');
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') e.currentTarget.classList.remove('show'); });
+
+let orderPlaced = false;
+let abandonedSaveTimer = null;
+function scheduleAbandonedSave(){
+  clearTimeout(abandonedSaveTimer);
+  abandonedSaveTimer = setTimeout(()=>{ saveAbandonedCart(CURRENT_PRODUCT); }, 1500);
+}
+async function saveAbandonedCart(p){
+  if(!p || orderPlaced) return;
+  const name = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim().replace(/\s+/g,'');
+  const wilaya = document.getElementById('fWilaya').value;
+  const commune = document.getElementById('fCommune').value;
+  if(!phone || phone.replace(/\D/g,'').length<9) return;
+  if(!cartSnapshotKey) cartSnapshotKey = 'aband_'+uid();
+  const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
+  const deliveryPrice = wilaya ? getDeliveryPrice(p, _deliverySettings, wilaya, DELIVERY_TYPE) : 0;
+  const productTotal = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : unitPrice*QTY;
+  const row = {
+    id: cartSnapshotKey, product_id: p.id, product_name: p.name, product_image: p.images[0]||'',
+    name, phone, wilaya, commune, qty: QTY,
+    variant: Object.values(SELECTED_VARIANT_LABELS).pop()||null,
+    delivery_price: deliveryPrice, total: productTotal+deliveryPrice,
+    delivery_type: DELIVERY_TYPE==='bureau'?'stopdesk':DELIVERY_TYPE,
+    unit_price: unitPrice, order_source: ORDER_SOURCE, updated_at: Date.now()
+  };
+  const {error} = await sb.from('abandoned_carts').upsert(row);
+  if(error) console.error('saveAbandonedCart:', error.message);
+}
+async function removeAbandonedCart(){
+  if(!cartSnapshotKey) return;
+  try{ await sb.from('abandoned_carts').delete().eq('id', cartSnapshotKey); }catch(e){}
+}
+['fName','fPhone','fWilaya','fCommune'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', scheduleAbandonedSave);
+  document.getElementById(id).addEventListener('change', scheduleAbandonedSave);
+});
+
+document.getElementById('orderForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const p = CURRENT_PRODUCT;
+  const name = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim().replace(/\s+/g,'');
+  const wilaya = document.getElementById('fWilaya').value;
+  const commune = document.getElementById('fCommune').value;
+
+  document.getElementById('phoneErr').style.display='none';
+  document.getElementById('fPhone').classList.remove('error');
+  let hasError = false;
+  const phoneErr = validatePhone(phone);
+  if(phoneErr){ document.getElementById('phoneErr').textContent = phoneErr; document.getElementById('phoneErr').style.display='block'; document.getElementById('fPhone').classList.add('error'); hasError = true; }
+  if(!name){ hasError = true; }
+  if(!wilaya){ alert('الرجاء اختيار الولاية'); hasError = true; }
+  if(!commune){ alert('الرجاء اختيار البلدية'); hasError = true; }
+  if(hasError) return;
+
+  // Duplicate protection
+  const LAST_ORDER_KEY = 'qs_last_order';
+  const lastOrder = JSON.parse(localStorage.getItem(LAST_ORDER_KEY)||'{}');
+  const nowTs = Date.now();
+  if(lastOrder.phone === phone && (nowTs - (lastOrder.ts||0)) < 5*60*1000){
+    const msg = document.getElementById('formMsg');
+    msg.className='msg err'; msg.textContent='لقد أرسلت طلبًا مؤخرًا. يرجى الانتظار بضع دقائق قبل إرسال طلب جديد.';
+    return;
+  }
+
+  const elapsed = Date.now() - orderStartTime;
+  if(elapsed < 10000) document.getElementById('fastWarning').style.display='block';
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'ثانية وحدة... ⏳';
+
+  const deliveryPrice = getDeliveryPrice(p, _deliverySettings, wilaya, DELIVERY_TYPE);
+  const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
+  const productTotal = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : unitPrice*QTY;
+  const total = productTotal + deliveryPrice;
+  const variantSuffix = Object.keys(SELECTED_VARIANT_LABELS).length
+    ? ' (' + Object.entries(SELECTED_VARIANT_LABELS).map(([k,v])=>`${k}: ${v}`).join(', ') + ')' : '';
+
+  const order = {
+    id: 'order_'+uid(), product_id: p.id, product_name: p.name+variantSuffix,
+    product_image: p.images[0]||'',
+    name, phone, wilaya, commune, qty: QTY,
+    variant: Object.values(SELECTED_VARIANT_LABELS).pop()||null,
+    unit_price: SELECTED_BUNDLE ? SELECTED_BUNDLE.price/SELECTED_BUNDLE.qty : unitPrice,
+    delivery_price: deliveryPrice, delivery_type: DELIVERY_TYPE==='bureau'?'stopdesk':DELIVERY_TYPE,
+    total, status:'new', order_source: ORDER_SOURCE,
+    filled_fast: elapsed<10000,
+    created_at: Date.now()
+  };
+
+  const {error} = await sb.from('orders').insert(order);
+  const msg = document.getElementById('formMsg');
+  if(error){
+    msg.className='msg err'; msg.textContent="وقع خطأ صغير 🙈 جرّب مرة أخرى";
+  } else {
+    orderPlaced = true;
+    try{ localStorage.setItem('qs_last_order', JSON.stringify({phone, ts: Date.now()})); }catch(e){}
+    await removeAbandonedCart();
+    trackPurchase({product_id:order.product_id, product_name:order.product_name, total:order.total});
+    QS_Engine.track('purchase', { id: p.id, category: p.category, price: p.priceNew });
+    showSuccessScreen(order, p);
+    document.getElementById('orderForm').reset();
+  }
+  btn.disabled = false; btn.textContent = '⚡ أكّد طلبك';
+});
+
+document.getElementById('callbackForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const phone = document.getElementById('callbackPhone').value.trim();
+  await sb.from('orders').insert({ id:'order_'+uid(), product_id:null, product_name:'طلب اتصال (Callback)', name:'—', phone, wilaya:'', commune:'', status:'new', order_source: ORDER_SOURCE, created_at: Date.now() });
+  e.target.reset();
+  alert('توصّل طلبك! 🎉 نكلّموك من دقايق');
+});
+
+const slides = document.querySelectorAll('.hero-slide');
+const dots = document.querySelectorAll('.hero-dots button');
+let current = 0;
+function showSlide(i){ slides.forEach(s=>s.classList.remove('active')); dots.forEach(d=>d.classList.remove('active')); slides[i].classList.add('active'); dots[i].classList.add('active'); current=i; }
+dots.forEach((d,i)=>d.addEventListener('click',()=>showSlide(i)));
+setInterval(()=>{ showSlide((current+1)%slides.length); }, 5500);
+
+const trustSlides = document.querySelectorAll('.trust-slide');
+const trustDots = document.querySelectorAll('.trust-dots button');
+let trustCurrent = 0;
+function showTrustSlide(i){ trustSlides.forEach(s=>s.classList.remove('active')); trustDots.forEach(d=>d.classList.remove('active')); trustSlides[i].classList.add('active'); trustDots[i].classList.add('active'); trustCurrent=i; }
+trustDots.forEach((d,i)=>d.addEventListener('click',()=>showTrustSlide(i)));
+setInterval(()=>{ showTrustSlide((trustCurrent+1)%trustSlides.length); }, 4200);
+
+document.getElementById('menuToggle').addEventListener('click', ()=>{ document.getElementById('mobileNav').classList.toggle('open'); });
+
+function setupScrollTracking(){
+  if(window._qs_io) window._qs_io.disconnect();
+  let scrollFired50 = false, scrollFired80 = false;
+  window.addEventListener('scroll', ()=>{
+    const pct = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
+    if(!scrollFired50 && pct >= 50){ scrollFired50=true; QS_Engine.track('scroll_deep', { meta:{depth:50} }); }
+    if(!scrollFired80 && pct >= 80){ scrollFired80=true; QS_Engine.track('scroll_deep', { meta:{depth:80} }); }
+  }, {passive:true});
+  // IntersectionObserver for product cards — passive view tracking
+  window._qs_io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        const id = entry.target.dataset.id;
+        const p = PRODUCTS.find(x=>x.id===id);
+        if(p){ QS_Engine.track('view_product', { id:p.id, category:p.category, price:p.priceNew }); }
+        window._qs_io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll('.product-card[data-id]').forEach(el=>window._qs_io.observe(el));
+}
+
+(async function init(){
+  await Promise.all([initMarketingPixels(), loadAppSettings()]);
+  await loadProducts();
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+  // Supabase keep-alive ping — once per day per browser
+  (function supabasePing(){
+    const KEY = 'qs_ping_day';
+    const today = new Date().toISOString().slice(0,10);
+    if(localStorage.getItem(KEY) === today) return;
+    fetch(`${SUPABASE_URL}/rest/v1/app_settings?select=id&limit=1`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},
+      cache:'no-store'
+    }).then(()=>localStorage.setItem(KEY,today)).catch(()=>{});
+  })();
+})();
+</script>
+</body>
+</html>
