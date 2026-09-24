@@ -1,4 +1,3 @@
-=== admin-panel/index.html (732,104 bytes) ===
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1592,11 +1591,12 @@ input,select,textarea{font-family:inherit;}
     </div>
     <div class="app-card-body" id="confirmatorsBody">
       <div id="confirmatorsList" style="margin-bottom:10px;"></div>
-      <div class="field-row">
-        <div class="field"><label>Nom</label><input type="text" id="newConfName" placeholder="Nom confirmateur"></div>
-        <div class="field"><label>Mot de passe</label><input type="password" id="newConfPass" placeholder="••••••••"></div>
+      <div style="background:var(--surface,#F7FAF9);border-radius:10px;padding:14px;font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px;">
+        <strong style="color:var(--ink);">Pour ajouter un accès :</strong><br>
+        1. Créer l'utilisateur sur <a href="https://supabase.com/dashboard/project/txlcppqnpoqnyjskevbh/auth/users" target="_blank" style="color:var(--brand);">Supabase → Authentication → Users</a><br>
+        2. Copier son UUID et exécuter dans SQL Editor :<br>
+        <code style="background:#eee;padding:4px 8px;border-radius:6px;display:inline-block;margin-top:6px;font-size:11.5px;">insert into user_roles (id, role) values ('UUID', 'confirmateur');</code>
       </div>
-      <button class="btn btn-primary btn-block" id="addConfirmatorBtn" style="margin-bottom:14px;">+ Ajouter un confirmateur</button>
 
       <!-- Réassignation automatique (déplacée ici depuis Livraison) -->
       <div style="border-top:1.5px solid var(--line);padding-top:12px;margin-top:2px;">
@@ -5434,7 +5434,7 @@ async function checkAutoReassign(){
 let DELIVERY_SETTINGS_REF = {};
 function renderOrdersUI(){
   document.getElementById('ordersCountSub').textContent = ORDERS.length + ' commande' + (ORDERS.length>1?'s':'') + ' au total';
-  const newCount = ORDERS.filter(o=>o.status==='new').length;
+  const newCount = (ORDERS||[]).filter(o=>o.status==='new').length;
   const badge = document.getElementById('ordersBadge');
   const sbadge = document.getElementById('sidebarOrdersBadge');
   if(newCount>0){ badge.style.display='flex'; badge.textContent=newCount; if(sbadge){sbadge.style.display='flex';sbadge.textContent=newCount;} }
@@ -6567,7 +6567,7 @@ async function renderApps(){
   }
   if(delayInp) delayInp.value = DELIVERY_SETTINGS.autoReassignDelayMinutes||10;
   appsLoaded = true;
-  loadAndRenderConfirmators();
+  loadUserRoles();
   loadAndRenderBlockedUsers();
 }
 
@@ -9025,87 +9025,35 @@ async function loadAndRenderBlockedUsers(){
     });
   });
 }
-async function loadAndRenderConfirmators(){
-  const {data, error} = await sb.from('confirmators').select('*').order('created_at', {ascending:true});
-  if(error){ console.error('loadConfirmators:', error.message); return; }
-    const list = data||[];
+async function loadUserRoles(){
   const zone = document.getElementById('confirmatorsList');
-  const activeCount = list.filter(c=>c.active).length;
-  setAppStatus('confirmatorsStatus', list.length ? `${list.length} confirmateur${list.length>1?'s':''} (${activeCount} actif${activeCount>1?'s':''})` : 'Aucun confirmateur', activeCount>0);
-  if(!list.length){ zone.innerHTML = '<div style="font-size:12.5px;color:var(--muted);margin-bottom:8px;">Aucun confirmateur créé.</div>'; return; }
-  zone.innerHTML = list.map(c=>`
-    <div class="confirmator-row">
-      <div class="conf-name">${c.name}</div>
-      <span class="conf-status ${c.active?'conf-active':'conf-inactive'}">${c.active?'Actif':'Désactivé'}</span>
-      <button class="btn btn-outline btn-sm toggle-conf-btn" data-id="${c.id}" data-active="${c.active?'1':'0'}" style="font-size:11.5px;padding:6px 10px;">
-        ${c.active?'Désactiver':'Activer'}
-      </button>
-      <button class="btn btn-outline btn-sm reset-conf-pass-btn" data-id="${c.id}" data-name="${c.name}" style="font-size:11.5px;padding:6px 10px;">🔑</button>
-      <button class="btn btn-danger btn-sm del-conf-btn" data-id="${c.id}" style="font-size:11.5px;padding:6px 10px;">✕</button>
-    </div>`).join('');
-
-  zone.querySelectorAll('.toggle-conf-btn').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const newActive = btn.dataset.active !== '1';
-      await sb.from('confirmators').update({active:newActive}).eq('id',btn.dataset.id);
-      showToast(newActive?'Confirmateur activé ✅':'Confirmateur désactivé');
-      loadAndRenderConfirmators();
-    });
-  });
-  zone.querySelectorAll('.reset-conf-pass-btn').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const newPass = prompt(`Nouveau mot de passe pour "${btn.dataset.name}" :`);
-      if(!newPass) return;
-      const hash = await hashPassword(newPass);
-      const {error} = await sb.from('confirmators').update({password_hash:hash}).eq('id', btn.dataset.id);
-      if(error){ showToast('Erreur: '+error.message); return; }
-      showToast('Mot de passe réinitialisé ✅');
-    });
-  });
-  zone.querySelectorAll('.del-conf-btn').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      // Récupérer le nom du confirmateur avant de supprimer
-      const confRow = CONFIRMATORS_LIST.find(c=>c.id===btn.dataset.id);
-      const confName = confRow?.name;
-      if(!confirm(`Supprimer le confirmateur "${confName||btn.dataset.id}" ?\n\nToutes ses commandes et paniers assignés seront désassignés.`)) return;
-
-      // 1. Supprimer le confirmateur
-      const {error} = await sb.from('confirmators').delete().eq('id', btn.dataset.id);
-      if(error){ showToast('Erreur: '+error.message); return; }
-
-      if(confName){
-        // 2. Désassigner toutes les commandes (assigned_to → null) en base
-        await sb.from('orders').update({assigned_to: null, assigned_at: null}).eq('assigned_to', confName);
-        // 3. Désassigner tous les paniers abandonnés
-        await sb.from('abandoned_carts').update({assigned_to: null, assigned_at: null}).eq('assigned_to', confName);
-        // 4. Mettre à jour le cache local immédiatement (dynamique)
-        ORDERS.forEach(o=>{ if(o.assignedTo===confName){ o.assignedTo=null; o.assignedAt=null; } });
-        ABANDONED_CARTS.forEach(c=>{ if(c.assignedTo===confName){ c.assignedTo=null; c.assignedAt=null; } });
-        // 5. Rafraîchir les vues
-        renderOrdersList();
-        renderAbandonedList();
-      }
-
-      showToast(`Confirmateur supprimé — commandes désassignées ✅`);
-      loadAndRenderConfirmators();
-    });
-  });
+  if(!zone) return;
+  const { data } = await sb.from('user_roles').select('id, role');
+  if(!data || !data.length){
+    zone.innerHTML = '<div style="font-size:12.5px;color:var(--muted);margin-bottom:8px;">Aucun utilisateur dans user_roles.</div>';
+    return;
+  }
+  zone.innerHTML = data.map(u => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;">
+      <div>
+        <div style="font-size:12px;color:var(--muted);font-family:monospace;">${u.id}</div>
+        <div style="font-size:13px;font-weight:700;margin-top:2px;">${u.role}</div>
+      </div>
+      <button onclick="deleteUserRole('${u.id}')" style="font-size:11px;color:var(--danger);background:var(--danger-light,#FEE2E2);border:none;border-radius:8px;padding:5px 10px;cursor:pointer;">Supprimer</button>
+    </div>
+  `).join('');
 }
 
-document.getElementById('addConfirmatorBtn').addEventListener('click', async ()=>{
-  const name = document.getElementById('newConfName').value.trim();
-  const pass = document.getElementById('newConfPass').value;
-  if(!name||!pass){ showToast('Nom et mot de passe requis'); return; }
-  const hash = await hashPassword(pass);
-  const {error} = await sb.from('confirmators').insert({
-    id:'conf_'+uid(), name, password_hash:hash, active:true, created_at:Date.now()
-  });
-  if(error){ showToast('Erreur: '+error.message); return; }
-  document.getElementById('newConfName').value = '';
-  document.getElementById('newConfPass').value = '';
-  showToast('Confirmateur créé ✅');
-  loadAndRenderConfirmators();
-});
+async function deleteUserRole(id){
+  if(!confirm('Supprimer cet accès ?')) return;
+  await sb.from('user_roles').delete().eq('id', id);
+  loadUserRoles();
+}
+
+// Keep loadAndRenderConfirmators as an alias for backward compatibility with the interval call
+async function loadAndRenderConfirmators(){
+  await loadUserRoles();
+}
 
 /* ============ CRÉATION MANUELLE DE COMMANDE ============ */
 
@@ -13403,7 +13351,7 @@ async function loadDashboard(){
     // Today's orders
     const { data: todayOrders } = await sb.from('orders')
       .select('id,name,product_name,total,status,created_at')
-      .gte('created_at', new Date(today).getTime())
+      .gte('created_at', today)
       .order('created_at', {ascending:false});
 
     const allToday = todayOrders || [];
