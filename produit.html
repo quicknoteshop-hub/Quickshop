@@ -326,6 +326,47 @@ let DELIVERY_TYPE = 'home';
 let DELIVERY_SETTINGS = null;
 let orderStartTime = 0;
 let orderPlaced = false;
+let abandonedCartKey = null;
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+async function saveAbandonedCart(){
+  if(orderPlaced || !PRODUCT) return;
+  const phone = (document.getElementById('fPhone')?.value||'').trim().replace(/\s+/g,'');
+  if(!phone || phone.replace(/\D/g,'').length < 9) return;
+  if(!abandonedCartKey) abandonedCartKey = 'aband_'+uid();
+  const p = PRODUCT;
+  const wilaya = document.getElementById('fWilaya')?.value||'';
+  const deliveryPrice = wilaya ? getDeliveryPrice(p, DELIVERY_SETTINGS, wilaya, DELIVERY_TYPE) : 0;
+  const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
+  const productTotal = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : (unitPrice||0)*QTY;
+  const row = {
+    id: abandonedCartKey,
+    product_id: p.id, product_name: p.name, product_image: (p.images&&p.images[0])||p.image||'',
+    name: (document.getElementById('fName')?.value||'').trim(),
+    phone: phone.replace(/\D/g,''),
+    wilaya, commune: document.getElementById('fCommune')?.value||'',
+    qty: QTY,
+    variant: Object.values(SELECTED_VARIANT_LABELS||{}).pop()||null,
+    delivery_price: deliveryPrice,
+    total: productTotal + deliveryPrice,
+    delivery_type: DELIVERY_TYPE==='bureau'?'stopdesk':DELIVERY_TYPE,
+    unit_price: unitPrice,
+    updated_at: Date.now()
+  };
+  const {error} = await sb.from('abandoned_carts').upsert(row);
+  if(error) console.error('saveAbandonedCart:', error.message);
+}
+
+let abandonedTimer = null;
+function scheduleAbandonedSave(){
+  clearTimeout(abandonedTimer);
+  abandonedTimer = setTimeout(saveAbandonedCart, 1500);
+}
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden'){ clearTimeout(abandonedTimer); saveAbandonedCart(); }
+});
+window.addEventListener('pagehide', ()=>{ clearTimeout(abandonedTimer); saveAbandonedCart(); });
 
 // ── Wilayas & Communes (hardcoded — same as index.html, no DB needed) ──
 const WILAYAS = ["Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Bejaia","Biskra","Bechar","Blida","Bouira","Tamanrasset","Tebessa","Tlemcen","Tiaret","Tizi Ouzou","Alger","Djelfa","Jijel","Setif","Saida","Skikda","Sidi Bel Abbes","Annaba","Guelma","Constantine","Medea","Mostaganem","MSila","Mascara","Ouargla","Oran","El Bayadh","Illizi","Bordj Bou Arreridj","Boumerdes","El Tarf","Tindouf","Tissemsilt","El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Ain Defla","Naama","Ain Temouchent","Ghardaia","Relizane","Timimoun","Ouled Djellal","Beni Abbes","In Salah","In Guezzam","Touggourt","Djanet","El Mghair","El Meniaa"];
@@ -681,6 +722,12 @@ function renderPage(p){
     if(QTY<10){ QTY++; document.getElementById('qtyVal').textContent=QTY; updateTotals(); }
   });
 
+  // Abandoned cart triggers
+  ['fName','fPhone','fWilaya','fCommune'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.addEventListener('input', scheduleAbandonedSave); el.addEventListener('change', scheduleAbandonedSave); }
+  });
+
   // Form submit
   document.getElementById('orderForm').addEventListener('submit', async(e)=>{
     e.preventDefault();
@@ -749,6 +796,7 @@ function renderPage(p){
       const { error } = await sb.from('orders').insert([order]);
       if(error) throw error;
       orderPlaced=true;
+      if(abandonedCartKey) sb.from('abandoned_carts').delete().eq('id', abandonedCartKey).then(()=>{});
       showSuccess(order);
     }catch(err){
       btn.disabled=false; btn.textContent='⚡ أكّد طلبك';
