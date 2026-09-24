@@ -9151,9 +9151,7 @@ async function createUser(){
     if(role === 'confirmateur'){
       const { error: confErr } = await sb.from('confirmators').insert({
         name: name,
-        email: email,
-        active: true,
-        created_at: new Date().toISOString()
+        active: true
       });
       if(confErr) console.warn('confirmators insert:', confErr.message);
     }
