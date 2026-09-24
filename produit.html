@@ -54,6 +54,8 @@ a{color:inherit;text-decoration:none;}
 .gallery-scroll::-webkit-scrollbar{display:none;}
 .gallery-scroll img{
   flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;
+  pointer-events:none; user-select:none; -webkit-user-select:none;
+  -webkit-touch-callout:none;
 }
 .gallery-scroll .placeholder{
   flex:0 0 100%;display:flex;align-items:center;justify-content:center;
@@ -86,23 +88,14 @@ a{color:inherit;text-decoration:none;}
   padding:5px 11px;border-radius:999px;white-space:nowrap;
 }
 
-/* ── Info block ── */
-.info{padding:16px 16px 0;}
+/* ── Info block (badge + name only) ── */
+.info{padding:16px 16px 10px;}
 .product-badge{
   display:inline-block;background:var(--amber);color:#12181A;
   font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;margin-bottom:8px;
 }
 .product-name{font-size:20px;font-weight:800;margin-bottom:8px;line-height:1.35;}
-.product-desc{font-size:14px;color:var(--ink-soft);line-height:1.8;margin-bottom:12px;white-space:pre-line;}
-.features{list-style:none;margin-bottom:16px;}
-.features li{
-  font-size:13.5px;color:var(--ink-soft);padding-inline-start:22px;
-  position:relative;margin-bottom:8px;line-height:1.6;
-}
-.features li::before{
-  content:'✓';position:absolute;inset-inline-start:0;
-  color:var(--teal);font-weight:800;font-size:15px;
-}
+/* description + features moved below form — see .desc-section */
 
 /* ── Variants ── */
 .variant-block{margin-bottom:14px;padding:0 16px;}
@@ -247,6 +240,37 @@ a{color:inherit;text-decoration:none;}
 .success-screen .s-summary strong{color:var(--teal-dark);}
 .wa-btn{display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:14px 28px;border-radius:14px;font-weight:800;text-decoration:none;font-size:15px;margin-top:4px;margin-bottom:8px;box-shadow:0 4px 14px rgba(37,211,102,.3);}
 .continue-btn{display:block;margin-top:10px;color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;}
+
+/* ── Description section (below form) ── */
+.desc-section{
+  margin:0;padding:20px 16px 4px;
+  border-top:2px dashed var(--line);
+}
+.desc-section-title{
+  font-size:15px;font-weight:800;color:var(--ink);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.desc-section-title::after{
+  content:'';flex:1;height:2px;background:var(--teal-tint);border-radius:2px;
+}
+.desc-text{
+  font-size:14px;color:var(--ink-soft);line-height:1.95;
+  white-space:pre-line;margin-bottom:14px;
+}
+.features-list{list-style:none;margin-bottom:16px;}
+.features-list li{
+  font-size:13.5px;color:var(--ink-soft);
+  padding:8px 0 8px 0;padding-inline-start:26px;
+  position:relative;border-bottom:1px solid var(--line);line-height:1.6;
+}
+.features-list li:last-child{border-bottom:none;}
+.features-list li::before{
+  content:'✓';position:absolute;inset-inline-start:0;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--teal);color:#fff;font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;top:10px;
+  line-height:1;text-align:center;
+}
 
 /* ── Skeleton ── */
 .skel{background:linear-gradient(90deg,#eee,#f5f5f5,#eee);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;}
@@ -547,12 +571,10 @@ function renderPage(p){
       <span class="p-badge" id="pBadge" style="display:none;"></span>
     </div>
 
-    <!-- Info -->
+    <!-- Info: badge + name only (description moves below form) -->
     <div class="info">
       ${p.badge?`<span class="product-badge">${esc(p.badge)}</span>`:''}
       <div class="product-name">${esc(p.name)}</div>
-      ${p.description?`<div class="product-desc">${esc(p.description)}</div>`:''}
-      ${p.features&&p.features.length?`<ul class="features">${p.features.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}
     </div>
 
     <!-- Variants -->
@@ -577,6 +599,10 @@ function renderPage(p){
     <div class="form-section">
       <div class="form-title">🛒 اطلب الآن — الدفع عند الاستلام</div>
       <form id="orderForm" autocomplete="on">
+        <!-- Honeypot: bots fill this, humans don't see it -->
+        <div style="position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden;" aria-hidden="true">
+          <input type="text" name="website" id="fHoneypot" tabindex="-1" autocomplete="off">
+        </div>
         <div class="field">
           <label>الاسم الكامل</label>
           <input type="text" id="fName" required placeholder="محمد أمين..." autocomplete="name">
@@ -614,6 +640,14 @@ function renderPage(p){
         <div class="form-msg" id="formMsg"></div>
       </form>
     </div>
+
+    <!-- Description & features (below order form) -->
+    ${(p.description||p.features&&p.features.length)?`
+    <div class="desc-section">
+      <div class="desc-section-title">📋 تفاصيل المنتج</div>
+      ${p.description?`<div class="desc-text">${esc(p.description)}</div>`:''}
+      ${p.features&&p.features.length?`<ul class="features-list">${p.features.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}
+    </div>`:''}
 
     <!-- Cross-sell -->
     <div id="crossSellZone"></div>
@@ -676,6 +710,9 @@ function renderPage(p){
     document.getElementById('fPhone').classList.remove('error');
     document.getElementById('phoneErr').style.display='none';
 
+    // Honeypot check (bots fill hidden field)
+    if(document.getElementById('fHoneypot').value){ return; }
+
     // Speed check
     const elapsed = (Date.now()-orderStartTime)/1000;
     if(elapsed<8){
@@ -686,7 +723,17 @@ function renderPage(p){
 
     if(!wilaya){ msg.className='form-msg err'; msg.textContent='الرجاء اختيار الولاية'; return; }
 
-    btn.disabled=true; btn.textContent='⏳ جاري الإرسال...';
+    btn.disabled=true; btn.textContent='⏳ جاري التحقق...';
+
+    // Anti-fraud check
+    const fraud = await checkFraud(phoneClean);
+    if(!fraud.ok){
+      btn.disabled=false; btn.textContent='⚡ أكّد طلبك';
+      msg.className='form-msg err'; msg.textContent=fraud.reason;
+      return;
+    }
+
+    btn.textContent='⏳ جاري الإرسال...';
     const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null?SELECTED_VARIANT_PRICE:p.priceNew);
     const productTotal = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : unitPrice*QTY;
     const deliveryPrice = DELIVERY_SETTINGS ? getDeliveryPrice(p, DELIVERY_SETTINGS, wilaya, DELIVERY_TYPE) : 400;
@@ -702,6 +749,7 @@ function renderPage(p){
       delivery_price: deliveryPrice,
       total: productTotal+deliveryPrice,
       status:'new', source:'web',
+      client_ip: CLIENT_IP||null,
       created_at: new Date().toISOString()
     };
     try{
@@ -717,6 +765,50 @@ function renderPage(p){
   });
 
   orderStartTime = Date.now();
+}
+
+// ── Image protection: block right-click & long-press on images ──
+document.addEventListener('contextmenu', e => {
+  if(e.target.tagName==='IMG') e.preventDefault();
+});
+document.addEventListener('dragstart', e => {
+  if(e.target.tagName==='IMG') e.preventDefault();
+});
+
+// ── Fetch client IP (used for fraud logging) ──
+let CLIENT_IP = null;
+(async()=>{
+  try{
+    const r = await fetch('https://api.ipify.org?format=json', {cache:'no-store'});
+    const j = await r.json();
+    CLIENT_IP = j.ip||null;
+  }catch(e){ CLIENT_IP = null; }
+})();
+
+// ── Anti-fraud: check phone rate-limit before submitting ──
+async function checkFraud(phoneClean){
+  // 1. Honeypot: already checked in form via hidden field
+  // 2. Phone rate-limit: max 3 orders from same phone in last 60 min
+  const oneHourAgo = new Date(Date.now()-60*60*1000).toISOString();
+  const { data, error } = await sb.from('orders')
+    .select('id', {count:'exact'})
+    .eq('phone', phoneClean)
+    .gte('created_at', oneHourAgo);
+  if(error) return { ok:true }; // fail open
+  if((data||[]).length >= 3){
+    return { ok:false, reason:'تم تسجيل عدة طلبات من هذا الرقم مؤخرًا. الرجاء المحاولة لاحقًا.' };
+  }
+  // 3. IP rate-limit: max 5 orders from same IP in last 60 min
+  if(CLIENT_IP){
+    const { data: ipData } = await sb.from('orders')
+      .select('id', {count:'exact'})
+      .eq('client_ip', CLIENT_IP)
+      .gte('created_at', oneHourAgo);
+    if((ipData||[]).length >= 5){
+      return { ok:false, reason:'نشاط مريب من هذا الجهاز. الرجاء المحاولة لاحقًا.' };
+    }
+  }
+  return { ok:true };
 }
 
 // ── Init ──
