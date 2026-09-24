@@ -9008,7 +9008,7 @@ async function loadSuspects(){
   if(!zone) return;
   zone.innerHTML = '<div style="font-size:12.5px;color:var(--muted);">Chargement...</div>';
   // Group by phone — same phone 3+ orders in last 24h
-  const since = new Date(Date.now()-24*60*60*1000).toISOString();
+  const since = Date.now() - 24*60*60*1000; // bigint ms
   const { data, error } = await sb.from('orders').select('id,phone,client_ip,name,product_name,status,created_at,total').gte('created_at', since).order('created_at',{ascending:false});
   if(error){ zone.innerHTML=`<div style="font-size:12px;color:var(--danger);">Erreur: ${error.message}</div>`; return; }
   const rows = data||[];

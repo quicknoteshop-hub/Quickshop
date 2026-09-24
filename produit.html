@@ -750,7 +750,7 @@ function renderPage(p){
       total: productTotal+deliveryPrice,
       status:'new', source:'web',
       client_ip: CLIENT_IP||null,
-      created_at: new Date().toISOString()
+      created_at: Date.now()
     };
     try{
       const { error } = await sb.from('orders').insert([order]);
@@ -789,7 +789,7 @@ let CLIENT_IP = null;
 async function checkFraud(phoneClean){
   // 1. Honeypot: already checked in form via hidden field
   // 2. Phone rate-limit: max 3 orders from same phone in last 60 min
-  const oneHourAgo = new Date(Date.now()-60*60*1000).toISOString();
+  const oneHourAgo = Date.now() - 60*60*1000; // bigint ms
   const { data, error } = await sb.from('orders')
     .select('id', {count:'exact'})
     .eq('phone', phoneClean)
