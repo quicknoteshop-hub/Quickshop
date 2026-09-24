@@ -2892,6 +2892,16 @@ input,select,textarea{font-family:inherit;}
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Numéros avec 3+ annulations ou sans-réponse récentes</div>
     <div id="problematicClientsList"><div style="font-size:12.5px;color:var(--muted);">Chargement...</div></div>
   </div>
+
+  <!-- Commandes suspectes -->
+  <div class="card" style="margin-top:16px;border:1.5px solid #FCA5A5;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:14px;font-weight:700;color:#991B1B;">🚨 Commandes suspectes (24h)</div>
+      <button class="btn btn-outline btn-sm" id="refreshSuspectsBtn" onclick="loadSuspects()">↻ Actualiser</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Même téléphone ou même IP avec 3+ commandes en 24h</div>
+    <div id="suspectsList"><div style="font-size:12.5px;color:var(--muted);">Chargement...</div></div>
+  </div>
 </section>
 
 <!-- Product edit modal -->
@@ -3439,7 +3449,7 @@ function rowToOrder(r){
     productImage: r.product_image,
     name: r.name,
     phone: r.phone,
-    customerIp: r.customer_ip,
+    customerIp: r.client_ip || r.customer_ip || null,
     wilaya: r.wilaya,
     commune: r.commune,
     qty: r.qty,
@@ -5033,6 +5043,12 @@ function orderCardHTML(o){
       ${o.ecomAddressError?`<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:#FEE2E2;color:#991B1B;">❌ Erronée ou non livrable</span>`:''}
       ${o.filledFast?'<span class="fast-flag">⚡ Rapide</span>':''}
       ${isBlocked?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5;">⛔ Numéro bloqué</span>`:''}
+      ${(()=>{
+        if(!o.customerIp) return '';
+        const sameIp = ORDERS.filter(x=>x.id!==o.id&&x.customerIp===o.customerIp);
+        if(sameIp.length>=2) return `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5;cursor:pointer;" title="IP: ${o.customerIp}">🌐 ${sameIp.length+1} commandes — même IP</span>`;
+        return `<span style="font-size:9.5px;color:var(--muted);padding:2px 0;" title="Adresse IP">🌐 ${o.customerIp}</span>`;
+      })()}
     </div>
     <div class="assign-select-wrap">
       <select class="assign-confirmator-select" data-id="${o.id}">
@@ -8987,8 +9003,57 @@ async function loadProblematicClients(){
     </div>`).join('');
 }
 
+async function loadSuspects(){
+  const zone = document.getElementById('suspectsList');
+  if(!zone) return;
+  zone.innerHTML = '<div style="font-size:12.5px;color:var(--muted);">Chargement...</div>';
+  // Group by phone — same phone 3+ orders in last 24h
+  const since = new Date(Date.now()-24*60*60*1000).toISOString();
+  const { data, error } = await sb.from('orders').select('id,phone,client_ip,name,product_name,status,created_at,total').gte('created_at', since).order('created_at',{ascending:false});
+  if(error){ zone.innerHTML=`<div style="font-size:12px;color:var(--danger);">Erreur: ${error.message}</div>`; return; }
+  const rows = data||[];
+  // Group by phone
+  const byPhone = {};
+  rows.forEach(r=>{ if(!r.phone) return; (byPhone[r.phone]=byPhone[r.phone]||[]).push(r); });
+  // Group by IP
+  const byIp = {};
+  rows.forEach(r=>{ if(!r.client_ip) return; (byIp[r.client_ip]=byIp[r.client_ip]||[]).push(r); });
+  // Collect suspects
+  const suspects = [];
+  Object.entries(byPhone).forEach(([phone,list])=>{ if(list.length>=3) suspects.push({type:'phone',key:phone,count:list.length,orders:list}); });
+  Object.entries(byIp).forEach(([ip,list])=>{ if(list.length>=3) suspects.push({type:'ip',key:ip,count:list.length,orders:list}); });
+  suspects.sort((a,b)=>b.count-a.count);
+  if(!suspects.length){
+    zone.innerHTML='<div style="font-size:12.5px;color:#065F46;background:#D1FAE5;padding:10px 14px;border-radius:10px;font-weight:700;">✅ Aucune activité suspecte dans les 24h</div>';
+    return;
+  }
+  zone.innerHTML = suspects.map(s=>`
+    <div style="border:1.5px solid #FCA5A5;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#FFF5F5;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <div>
+          <span style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;background:#FEE2E2;color:#991B1B;">${s.type==='phone'?'📞 Même téléphone':'🌐 Même IP'}</span>
+          <span style="font-size:13px;font-weight:700;margin-right:8px;"> ${s.key}</span>
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:#991B1B;color:#fff;">${s.count} commandes</span>
+        </div>
+        ${s.type==='phone'?`<button onclick="const r=prompt('Raison (optionnel) :')||''; blockCustomer('${s.key}',null,r).then(()=>loadSuspects())" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5;cursor:pointer;">🚫 Bloquer ce numéro</button>`:
+          `<button onclick="const r=prompt('Raison (optionnel) :')||''; blockCustomer(null,'${s.key}',r).then(()=>loadSuspects())" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5;cursor:pointer;">🚫 Bloquer cette IP</button>`}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+        <tr style="color:var(--muted);font-weight:700;font-size:10.5px;">
+          <td style="padding:3px 6px;">Nom</td><td style="padding:3px 6px;">Produit</td><td style="padding:3px 6px;">Total</td><td style="padding:3px 6px;">Statut</td>
+        </tr>
+        ${s.orders.map(o=>`<tr style="border-top:1px solid #FCA5A5;">
+          <td style="padding:4px 6px;">${o.name||'—'}</td>
+          <td style="padding:4px 6px;">${o.product_name||'—'}</td>
+          <td style="padding:4px 6px;font-weight:700;">${fmt(o.total)} دج</td>
+          <td style="padding:4px 6px;"><span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;background:#FEF3C7;color:#92400E;">${o.status||'new'}</span></td>
+        </tr>`).join('')}
+      </table>
+    </div>`).join('');
+}
+
 async function renderClientsView(){
-  await Promise.all([renderClientsBlockedList(), loadProblematicClients(), loadBlockedPhonesSet()]);
+  await Promise.all([renderClientsBlockedList(), loadProblematicClients(), loadBlockedPhonesSet(), loadSuspects()]);
 }
 
 async function hashPassword(password){
