@@ -5478,7 +5478,7 @@ function renderOrdersUI(){
   }
 }
 async function renderOrders(){
-  [ORDERS, DELIVERY_SETTINGS] = await Promise.all([loadOrders(), loadDeliverySettings()]);
+  [ORDERS, DELIVERY_SETTINGS] = await Promise.all([loadOrders(), loadDeliverySettings(), loadConfirmators()]);
   renderOrdersUI();
 }
 async function postponeOrder(id, ts){
@@ -9163,6 +9163,8 @@ async function createUser(){
     await loadConfirmators();
     renderBulkAssignSelect();
     renderAbandonedBulkAssignSelect();
+    renderOrdersList();
+    renderAbandonedList();
     loadUserRoles();
   } catch(e) {
     showUserMsg(msg, '❌ ' + e.message, 'var(--danger)');
