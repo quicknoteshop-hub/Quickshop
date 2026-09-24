@@ -5382,7 +5382,7 @@ async function autoAssignNewOrders(){
       // à cet instant précis — empêche une session restée ouverte longtemps d'écraser une
       // commande déjà traitée entre-temps par quelqu'un d'autre.
       const {data, error} = await sb.from('orders')
-        .update({assigned_to: assignTo, assigned_at: o.assignedAt})
+        .update({assigned_to: assignTo, assigned_at: new Date(o.assignedAt).toISOString()})
         .eq('id', o.id)
         .eq('status', 'new')
         .is('assigned_to', null)
@@ -5414,7 +5414,7 @@ async function autoAssignNewOrders(){
       c.assignedTo = assignTo;
       c.assignedAt = Date.now();
       const {error} = await sb.from('abandoned_carts')
-        .update({assigned_to: assignTo, assigned_at: c.assignedAt})
+        .update({assigned_to: assignTo, assigned_at: new Date(c.assignedAt).toISOString()})
         .eq('id', c.id);
       if(error){ c.assignedTo=null; c.assignedAt=null; console.error('autoAssign aband:', error.message); }
       else logActivity('abandoned_cart', c.id, 'assigned', 'Assignation automatique à la création', null, assignTo);
