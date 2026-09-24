@@ -206,81 +206,116 @@
   .overlay{position:fixed; inset:0; background:var(--bg); z-index:200; display:none; flex-direction:column; overflow:hidden;}
   .overlay.show{display:flex;}
   @keyframes slideIn{from{transform:translateX(100%);} to{transform:translateX(0);}}
-  .sheet{background:var(--bg); width:100%; height:100%; display:flex; flex-direction:column; animation:slideIn .22s cubic-bezier(.4,0,.2,1);}
+  .sheet{background:var(--bg); width:100%; height:100%; display:flex; flex-direction:column; animation:slideIn .25s cubic-bezier(.4,0,.2,1);}
 
   /* Top bar */
-  .sheet-topbar{display:flex; align-items:center; gap:10px; padding:12px 16px 10px; background:var(--bg-card); border-bottom:1.5px solid var(--line); position:sticky; top:0; z-index:10; flex-shrink:0;}
-  .sheet-close{width:36px; height:36px; border-radius:50%; background:var(--teal-tint); color:var(--teal-dark); font-size:18px; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; flex-shrink:0;}
-  .sheet-topbar-name{font-size:14px; font-weight:800; color:var(--ink); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sheet-topbar{display:flex; align-items:center; gap:10px; padding:10px 14px 9px; background:#fff; border-bottom:1.5px solid var(--line); position:sticky; top:0; z-index:10; flex-shrink:0;}
+  .sheet-close{width:34px; height:34px; border-radius:50%; background:var(--teal-tint); color:var(--teal-dark); font-size:18px; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; flex-shrink:0;}
+  .sheet-topbar-name{font-size:13.5px; font-weight:800; color:var(--ink); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 
   /* Scrollable content */
-  .sheet-scroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:90px;}
+  .sheet-scroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:100px;}
 
   /* Gallery */
-  .sheet-gallery{aspect-ratio:1/1; background:var(--teal-tint); overflow:hidden; position:relative; max-height:55vw;}
+  .sheet-gallery{aspect-ratio:1/1; background:var(--teal-tint); overflow:hidden; position:relative; max-height:56vw;}
   .sheet-gallery img{width:100%; height:100%; object-fit:cover;}
   .gallery-track{display:flex; width:100%; height:100%; transition:transform .3s cubic-bezier(.4,0,.2,1); will-change:transform;}
   .gallery-track img{width:100%; height:100%; object-fit:cover; flex-shrink:0;}
-  .gallery-dots{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px;}
-  .gallery-dots button{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.5); border:none; cursor:pointer; padding:0;}
-  .gallery-dots button.active{background:#fff; width:16px; border-radius:4px;}
+  .gallery-dots{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:2;}
+  .gallery-dots button{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.55); border:none; cursor:pointer; padding:0; transition:.2s;}
+  .gallery-dots button.active{background:#fff; width:18px; border-radius:4px;}
+
+  /* Price hero - colorful strip right below gallery */
+  .sheet-price-hero{display:flex; align-items:center; justify-content:space-between; padding:12px 16px 10px; background:linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%); color:#fff; flex-shrink:0;}
+  .sheet-price-hero .price-new{font-size:24px; font-weight:800; color:#fff;}
+  .sheet-price-hero .price-old{font-size:13px; color:rgba(255,255,255,.65); text-decoration:line-through; font-weight:600; margin-inline-start:8px;}
+  .sheet-price-hero .price-badge{background:var(--amber); color:#12181A; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px;}
 
   /* Body */
-  .sheet-body{padding:16px 16px 10px;}
+  .sheet-body{padding:14px 16px 8px;}
 
   /* Sticky order button */
-  .sheet-sticky-btn{position:fixed; bottom:0; left:0; right:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); background:var(--bg-card); border-top:1.5px solid var(--line); z-index:210; box-shadow:0 -4px 20px rgba(18,24,26,.08);}
-  .sheet-sticky-btn .btn{height:52px; font-size:16px; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px;}
+  .sheet-sticky-btn{position:fixed; bottom:0; left:0; right:0; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:#fff; border-top:2px solid var(--line); z-index:210; box-shadow:0 -6px 24px rgba(18,24,26,.1);}
+  .sheet-sticky-btn .btn{height:54px; font-size:17px; font-weight:800; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,var(--amber) 0%,#c47a2a 100%); color:#12181A; box-shadow:0 4px 14px rgba(224,138,60,.35);}
+  .sheet-sticky-btn .btn:active{transform:scale(.97);}
+
   .sheet-badge{display:inline-block; background:var(--amber); color:#12181A; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; margin-bottom:8px;}
-  .sheet-name{font-size:19px; font-weight:800; margin-bottom:6px;}
-  .sheet-price{font-size:20px; font-weight:800; color:var(--teal); margin-bottom:14px;}
-  .sheet-price .old{font-size:14px; color:var(--ink-soft); text-decoration:line-through; font-weight:600; margin-inline-start:8px;}
-  .sheet-desc{font-size:13.5px; color:var(--ink-soft); line-height:1.8; margin-bottom:14px; white-space:pre-line;}
-  .sheet-features{margin-bottom:16px;}
-  .sheet-features li{font-size:13px; color:var(--ink-soft); padding-inline-start:18px; position:relative; margin-bottom:7px; line-height:1.6;}
-  .sheet-features li::before{content:'✓'; position:absolute; inset-inline-start:0; color:var(--teal); font-weight:800;}
+  .sheet-name{font-size:19px; font-weight:800; margin-bottom:6px; color:var(--ink);}
+  .sheet-desc{font-size:13.5px; color:var(--ink-soft); line-height:1.8; margin-bottom:12px; white-space:pre-line;}
+  .sheet-features{margin-bottom:14px;}
+  .sheet-features li{font-size:13px; color:var(--ink-soft); padding-inline-start:20px; position:relative; margin-bottom:7px; line-height:1.6;}
+  .sheet-features li::before{content:'✓'; position:absolute; inset-inline-start:0; color:var(--teal); font-weight:800; font-size:14px;}
 
   .variant-block{margin-bottom:14px;}
-  .variant-label{font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:8px;}
+  .variant-label{font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; text-transform:uppercase; letter-spacing:.4px;}
   .variant-opts{display:flex; gap:8px; flex-wrap:wrap;}
-  .variant-opt{padding:8px 14px; border-radius:999px; border:1.5px solid var(--line); font-size:12.5px; font-weight:700; cursor:pointer; background:var(--bg-card);}
-  .variant-opt.active{background:var(--nav-dark); border-color:var(--nav-dark); color:#fff;}
+  .variant-opt{padding:8px 16px; border-radius:999px; border:2px solid var(--line); font-size:12.5px; font-weight:700; cursor:pointer; background:#fff; transition:.15s;}
+  .variant-opt.active{background:var(--teal); border-color:var(--teal); color:#fff;}
   .variant-opt.oos{opacity:.4; text-decoration:line-through; cursor:not-allowed;}
-  .qty-btn{min-width:44px; height:44px; border-radius:9px; background:#fff; border:2px solid var(--line); font-size:17px; font-weight:700; color:var(--teal-dark); display:flex; align-items:center; justify-content:center; transition:.15s; cursor:pointer;}
-  .qty-btn:active{transform:scale(.92);}
-  .qty-row{display:flex; align-items:center; justify-content:space-between; background:var(--bg); border-radius:11px; padding:8px 12px; margin-bottom:12px; border:2px solid var(--line);}
+  .qty-btn{min-width:44px; height:44px; border-radius:9px; background:#fff; border:2px solid var(--line); font-size:20px; font-weight:700; color:var(--teal-dark); display:flex; align-items:center; justify-content:center; transition:.15s; cursor:pointer;}
+  .qty-btn:active{transform:scale(.92); background:var(--teal-tint);}
+  .qty-row{display:flex; align-items:center; justify-content:space-between; background:#fff; border-radius:12px; padding:10px 14px; margin-bottom:12px; border:2px solid var(--line);}
   .qty-label{font-size:13px; font-weight:700;}
-  .qty-ctrl{display:flex; align-items:center; gap:11px;}
-  .qty-val{width:28px; text-align:center; font-size:16px; font-weight:800;}
+  .qty-ctrl{display:flex; align-items:center; gap:12px;}
+  .qty-val{width:28px; text-align:center; font-size:18px; font-weight:800; color:var(--teal);}
 
   .bundle-block{margin-bottom:14px;}
-  .bundle-opt{display:flex; justify-content:space-between; align-items:center; padding:11px 14px; border:1.5px solid var(--line); border-radius:12px; margin-bottom:8px; cursor:pointer; font-size:13px; font-weight:700;}
-  .bundle-opt.active{background:var(--teal-tint); border-color:var(--teal);}
+  .bundle-opt{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border:2px solid var(--line); border-radius:12px; margin-bottom:8px; cursor:pointer; font-size:13px; font-weight:700; background:#fff; transition:.15s;}
+  .bundle-opt.active{background:var(--teal-tint); border-color:var(--teal); color:var(--teal-dark);}
 
-  .form-title{font-weight:700; font-size:14px; margin-bottom:12px; padding-top:16px; border-top:1px dashed var(--line);}
+  /* Form section */
+  .form-title{font-weight:800; font-size:15px; margin-bottom:12px; padding-top:16px; border-top:2px dashed var(--line); color:var(--ink); display:flex; align-items:center; gap:7px;}
   .field{margin-bottom:11px;}
   .field label{display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:5px;}
-  .field input,.field select,.field textarea{width:100%; padding:11px 13px; border:1.5px solid var(--line); border-radius:10px; font-size:13.5px; background:var(--bg);}
+  .field input,.field select,.field textarea{width:100%; padding:11px 13px; border:1.5px solid var(--line); border-radius:10px; font-size:14px; background:#fff; transition:.15s;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal); outline:none; box-shadow:0 0 0 3px rgba(31,75,76,.1);}
   .field input.error{border-color:var(--danger);}
   .field-err{font-size:11.5px; color:var(--danger); margin-top:4px; font-weight:700;}
   .field textarea{resize:vertical; min-height:56px;}
+  /* Wilaya + Commune side by side */
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:11px;}
+  .field-row .field{margin-bottom:0;}
   .delivery-toggle{display:flex; gap:8px; margin-bottom:12px;}
-  .delivery-opt{flex:1; text-align:center; padding:10px; border:1.5px solid var(--line); border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer;}
-  .delivery-opt.active{background:var(--nav-dark); border-color:var(--nav-dark); color:#fff;}
-  .total-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; font-size:14px; font-weight:800; border-top:1px dashed var(--line); margin-top:6px;}
+  .delivery-opt{flex:1; text-align:center; padding:10px 6px; border:2px solid var(--line); border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:.15s; background:#fff;}
+  .delivery-opt.active{background:var(--teal); border-color:var(--teal); color:#fff;}
+
+  /* Price breakdown */
+  .price-breakdown{background:#fff; border-radius:14px; border:1.5px solid var(--line); overflow:hidden; margin-bottom:6px;}
+  .price-breakdown-row{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; font-size:13px; font-weight:600;}
+  .price-breakdown-row:not(:last-child){border-bottom:1px dashed var(--line);}
+  .price-breakdown-row.total{font-size:15px; font-weight:800; background:var(--teal-tint); color:var(--teal-dark);}
+  .price-breakdown-row .label{color:var(--ink-soft);}
+  .price-breakdown-row .val{font-weight:800; color:var(--ink);}
+  .price-breakdown-row.total .val{color:var(--teal);}
+
   .form-msg{text-align:center; font-size:13px; font-weight:700; margin-top:10px; padding:10px; border-radius:10px; display:none;}
   .form-msg.ok{display:block; background:var(--teal-tint); color:var(--teal-dark);}
   .form-msg.err{display:block; background:var(--amber-tint); color:#A85A22;}
   .fast-warning{display:none; background:var(--amber-tint); color:#7A5228; font-size:12px; font-weight:700; padding:9px; border-radius:9px; margin-top:8px;}
   .coming-lock{text-align:center; padding:16px; background:var(--amber-tint); border-radius:12px; font-weight:700; color:#7A5228; font-size:13.5px;}
+
+  /* Cross-sell strip */
+  .cs-section{margin:10px -16px 0; padding:16px 16px 10px; background:linear-gradient(135deg,#f7f5f1 0%, #e8f3f3 100%); border-top:2px dashed var(--line);}
+  .cs-section-title{font-size:15px; font-weight:800; color:var(--teal-dark); margin-bottom:12px; display:flex; align-items:center; gap:6px;}
+  .cs-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none;}
+  .cs-row::-webkit-scrollbar{display:none;}
+  .cs-card{flex:0 0 130px; background:#fff; border-radius:14px; overflow:hidden; cursor:pointer; border:1.5px solid var(--line); box-shadow:0 2px 8px rgba(18,24,26,.07); transition:transform .15s;}
+  .cs-card:active{transform:scale(.96);}
+  .cs-card .cs-img{height:100px; background:var(--teal-tint); overflow:hidden;}
+  .cs-card .cs-img img{width:100%; height:100%; object-fit:cover;}
+  .cs-card .cs-info{padding:8px 10px 10px;}
+  .cs-card .cs-name{font-size:12px; font-weight:700; color:var(--ink); line-height:1.4; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .cs-card .cs-price{font-size:13px; font-weight:800; color:var(--teal);}
+
+  /* Success screen */
   .success-screen{text-align:center; padding:32px 20px 28px;}
-  .success-screen .s-icon{font-size:56px; margin-bottom:12px; animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+  .success-screen .s-icon{font-size:64px; margin-bottom:12px; animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
   @keyframes popIn{from{transform:scale(.5); opacity:0;} to{transform:scale(1); opacity:1;}}
-  .success-screen .s-title{font-size:20px; font-weight:800; color:var(--teal-dark); margin-bottom:6px;}
+  .success-screen .s-title{font-size:22px; font-weight:800; color:var(--teal-dark); margin-bottom:6px;}
   .success-screen .s-sub{font-size:13.5px; color:var(--ink-soft); line-height:1.7; margin-bottom:14px;}
-  .success-screen .s-summary{background:var(--teal-tint); border-radius:12px; padding:14px 16px; margin-bottom:16px; text-align:right; font-size:13px; line-height:2;}
+  .success-screen .s-summary{background:var(--teal-tint); border-radius:14px; padding:14px 16px; margin-bottom:16px; text-align:right; font-size:13px; line-height:2.1;}
   .success-screen .s-summary strong{color:var(--teal-dark);}
-  .wa-btn{display:inline-flex; align-items:center; gap:8px; background:#25D366; color:#fff; padding:12px 24px; border-radius:12px; font-weight:700; text-decoration:none; font-size:15px; margin-top:4px; margin-bottom:8px;}
+  .wa-btn{display:inline-flex; align-items:center; gap:8px; background:#25D366; color:#fff; padding:14px 28px; border-radius:14px; font-weight:800; text-decoration:none; font-size:15px; margin-top:4px; margin-bottom:8px; box-shadow:0 4px 14px rgba(37,211,102,.3);}
   .continue-btn{display:block; margin-top:10px; color:var(--ink-soft); font-size:13px; font-weight:700; cursor:pointer; text-decoration:underline;}
 </style>
 </head>
@@ -413,11 +448,19 @@
         <div class="gallery-dots" id="galleryDots" style="display:none;"></div>
       </div>
 
+      <!-- Colorful price hero strip (always visible under gallery) -->
+      <div class="sheet-price-hero" id="sheetPriceHero">
+        <div>
+          <span class="price-new" id="sheetPriceNew">—</span>
+          <span class="price-old" id="sheetPriceOld" style="display:none;"></span>
+        </div>
+        <span class="price-badge" id="sheetPriceBadge" style="display:none;"></span>
+      </div>
+
       <!-- Product info -->
       <div class="sheet-body">
         <div id="sheetBadgeZone"></div>
         <div class="sheet-name" id="sheetName"></div>
-        <div class="sheet-price" id="sheetPrice"></div>
         <div class="sheet-desc" id="sheetDesc"></div>
         <ul class="sheet-features" id="sheetFeatures"></ul>
 
@@ -426,30 +469,50 @@
         <div id="bundlesZone"></div>
 
         <!-- Order form -->
-        <div class="form-title">اطلب الآن — الدفع عند الاستلام</div>
+        <div class="form-title">🛒 اطلب الآن — الدفع عند الاستلام</div>
         <form id="orderForm">
-          <div class="field"><label>الاسم الكامل</label><input type="text" id="fName" required></div>
+          <div class="field"><label>الاسم الكامل</label><input type="text" id="fName" required placeholder="محمد أمين..."></div>
           <div class="field">
             <label>رقم الهاتف</label>
             <input type="tel" id="fPhone" required placeholder="05XXXXXXXX">
             <div class="field-err" id="phoneErr" style="display:none;"></div>
           </div>
-          <div class="field"><label>الولاية</label><select id="fWilaya" required></select></div>
-          <div class="field"><label>البلدية</label><select id="fCommune" required><option value="">اختر البلدية</option></select></div>
 
-          <div class="delivery-toggle" id="deliveryToggle">
-            <div class="delivery-opt active" data-type="home">توصيل للمنزل</div>
-            <div class="delivery-opt" data-type="bureau">توصيل لمكتب</div>
+          <!-- Wilaya + Commune side by side -->
+          <div class="field-row">
+            <div class="field"><label>الولاية</label><select id="fWilaya" required></select></div>
+            <div class="field"><label>البلدية</label><select id="fCommune" required><option value="">اختر البلدية</option></select></div>
           </div>
 
-          <div class="field"><label>ملاحظات (اختياري)</label><textarea id="fNotes"></textarea></div>
-          <div class="total-row"><span>المجموع</span><span id="totalPrice">—</span></div>
+          <div class="delivery-toggle" id="deliveryToggle">
+            <div class="delivery-opt active" data-type="home">🏠 للمنزل</div>
+            <div class="delivery-opt" data-type="bureau">📦 لمكتب البريد</div>
+          </div>
+
+          <div class="field"><label>ملاحظات (اختياري)</label><textarea id="fNotes" placeholder="لون، مقاس، أو أي ملاحظة..."></textarea></div>
+
+          <!-- Price breakdown -->
+          <div class="price-breakdown" id="priceBreakdown">
+            <div class="price-breakdown-row">
+              <span class="label">💰 سعر المنتج</span>
+              <span class="val" id="pbProduct">—</span>
+            </div>
+            <div class="price-breakdown-row">
+              <span class="label" id="pbDeliveryLabel">🚚 توصيل للمنزل</span>
+              <span class="val" id="pbDelivery">—</span>
+            </div>
+            <div class="price-breakdown-row total">
+              <span>المجموع الكلي</span>
+              <span id="totalPrice">—</span>
+            </div>
+          </div>
+
           <div class="fast-warning" id="fastWarning">⚠️ يبدو أنك أكملت النموذج بسرعة كبيرة — تأكد من صحة بياناتك</div>
           <div class="form-msg" id="formMsg"></div>
         </form>
 
         <!-- Cross-sell / other products -->
-        <div id="crossSellZone" style="margin-top:10px;"></div>
+        <div id="crossSellZone"></div>
       </div>
     </div>
 
@@ -1124,9 +1187,29 @@ function renderRecentStrip(){
 }
 function renderCrossSell(p){
   const zone = document.getElementById('crossSellZone');
-  const related = PRODUCTS.filter(x=>x.id!==p.id && x.category===p.category && x.active!==false).slice(0,6);
+  // Show related products from same category, or fallback to all products
+  let related = PRODUCTS.filter(x=>x.id!==p.id && x.category===p.category && x.active!==false);
+  if(related.length < 3) related = PRODUCTS.filter(x=>x.id!==p.id && x.active!==false);
+  related = related.slice(0,8);
   if(!related.length){ zone.innerHTML=''; return; }
-  zone.innerHTML = `<div class="cs-title" style="margin-top:6px;">✨ قد يعجبك أيضًا</div><div class="cs-row">${related.map(miniCard).join('')}</div>`;
+  zone.innerHTML = `
+    <div class="cs-section">
+      <div class="cs-section-title">✨ منتجات قد تعجبك</div>
+      <div class="cs-row">
+        ${related.map(r=>`
+          <div class="cs-card" data-id="${esc(r.id)}">
+            <div class="cs-img">
+              ${(r.images&&r.images[0])||r.image
+                ? `<img src="${encodeURI((r.images&&r.images[0])||r.image)}" alt="${esc(r.name)}" loading="lazy">`
+                : `<div style="width:100%;height:100%;background:var(--teal-tint);display:flex;align-items:center;justify-content:center;font-size:28px;">🛍️</div>`}
+            </div>
+            <div class="cs-info">
+              <div class="cs-name">${esc(r.name)}</div>
+              <div class="cs-price">${fmt(r.priceNew)} دج</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
   zone.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>openSheet(el.dataset.id));
 }
 
@@ -1154,6 +1237,7 @@ async function openSheet(id){
   document.getElementById('sheetDesc').textContent = p.description||'';
   document.getElementById('sheetFeatures').innerHTML = (p.features||[]).map(f=>`<li>${esc(f)}</li>`).join('');
   document.getElementById('deliveryToggle').querySelectorAll('.delivery-opt').forEach(el=>el.classList.toggle('active', el.dataset.type==='home'));
+  DELIVERY_TYPE = 'home';
 
   renderVariants(p); renderBundles(p); updatePriceDisplay();
   renderCrossSell(p);
@@ -1311,18 +1395,47 @@ function renderBundles(p){
 function updatePriceDisplay(){
   const p = CURRENT_PRODUCT;
   const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
-  document.getElementById('sheetPrice').innerHTML = SELECTED_BUNDLE
-    ? `${fmt(SELECTED_BUNDLE.price)} دج`
-    : `${fmt(unitPrice)}${p.priceOld?`<span class="old">${fmt(p.priceOld)} دج</span>`:''} دج`;
+  const displayPrice = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : unitPrice;
+
+  // Update colorful price hero strip
+  document.getElementById('sheetPriceNew').textContent = fmt(displayPrice) + ' دج';
+  const oldEl = document.getElementById('sheetPriceOld');
+  if(!SELECTED_BUNDLE && p.priceOld && p.priceOld > displayPrice){
+    oldEl.textContent = fmt(p.priceOld) + ' دج';
+    oldEl.style.display = 'inline';
+    const pct = Math.round((1 - displayPrice/p.priceOld)*100);
+    const badgeEl = document.getElementById('sheetPriceBadge');
+    badgeEl.textContent = '-' + pct + '%';
+    badgeEl.style.display = 'inline-block';
+  } else {
+    oldEl.style.display = 'none';
+    document.getElementById('sheetPriceBadge').style.display = 'none';
+  }
   updateTotals();
 }
 function updateTotals(){
   const p = CURRENT_PRODUCT;
   const wilaya = document.getElementById('fWilaya').value;
-  const deliveryPrice = wilaya ? getDeliveryPrice(p, _deliverySettings, wilaya, DELIVERY_TYPE) : 0;
+  const deliveryPrice = wilaya ? getDeliveryPrice(p, _deliverySettings, wilaya, DELIVERY_TYPE) : null;
   const unitPrice = SELECTED_BUNDLE ? null : (SELECTED_VARIANT_PRICE!=null ? SELECTED_VARIANT_PRICE : p.priceNew);
   const productTotal = SELECTED_BUNDLE ? SELECTED_BUNDLE.price : unitPrice*QTY;
-  document.getElementById('totalPrice').textContent = fmt(productTotal + deliveryPrice) + ' دج' + (wilaya ? '' : ' (+ توصيل)');
+
+  // Price breakdown rows
+  document.getElementById('pbProduct').textContent = fmt(productTotal) + ' دج';
+  const delivLabel = document.getElementById('pbDeliveryLabel');
+  const delivVal = document.getElementById('pbDelivery');
+  if(DELIVERY_TYPE === 'bureau'){
+    delivLabel.textContent = '📦 توصيل لمكتب البريد';
+  } else {
+    delivLabel.textContent = '🚚 توصيل للمنزل';
+  }
+  if(deliveryPrice !== null){
+    delivVal.textContent = deliveryPrice > 0 ? fmt(deliveryPrice) + ' دج' : 'مجاني 🎉';
+    document.getElementById('totalPrice').textContent = fmt(productTotal + deliveryPrice) + ' دج';
+  } else {
+    delivVal.textContent = '—';
+    document.getElementById('totalPrice').textContent = fmt(productTotal) + ' دج (+ توصيل)';
+  }
 }
 document.getElementById('fWilaya').addEventListener('change', updateTotals);
 document.getElementById('deliveryToggle').querySelectorAll('.delivery-opt').forEach(el=>{
