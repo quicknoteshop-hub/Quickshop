@@ -3618,7 +3618,7 @@ function rowToAppSettings(r){
     metaCapiPixelId: r.meta_capi_pixel_id || '',
     metaCapiToken: r.meta_capi_token || '',
     // Social / Contact
-    whatsappNumber: r.whatsapp_number || '',
+    whatsappNumber: r.whatsapp_number || r.whatsapp || '',
     instagramHandle: r.instagram_handle || '',
     facebookPageHandle: r.facebook_page_handle || '',
     // Tarifs salaires confirmateurs (دج par livraison) — 50/100 = valeurs par défaut si jamais configuré
