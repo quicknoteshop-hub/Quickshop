@@ -1126,9 +1126,9 @@ function renderProductGrid(){
       e.stopPropagation();
       const p = PRODUCTS.find(x=>x.id===c.dataset.id);
       if(p) QS_Engine.track('quick_add', { id: p.id, category: p.category, price: p.priceNew });
-      openSheet(c.dataset.id);
+      window.location.href = `produit.html?id=${encodeURIComponent(c.dataset.id)}`;
     });
-    c.addEventListener('click', ()=> openSheet(c.dataset.id));
+    c.addEventListener('click', ()=> window.location.href = `produit.html?id=${encodeURIComponent(c.dataset.id)}`);
   });
   setupScrollTracking();
 }
@@ -1152,12 +1152,12 @@ function renderForYouStrip(){
       </div>
     </div>`;
   }).join('');
-  strip.querySelectorAll('[data-id]').forEach(el=>el.addEventListener('click',()=>openSheet(el.dataset.id)));
+  strip.querySelectorAll('[data-id]').forEach(el=>el.addEventListener('click',()=>window.location.href=`produit.html?id=${encodeURIComponent(el.dataset.id)}`));
 }
 function openProductFromUrl(){
   const params = new URLSearchParams(window.location.search);
   const pid = params.get('id') || params.get('product');
-  if(pid && PRODUCTS.find(p=>p.id===pid)) openSheet(pid);
+  if(pid) window.location.href = `produit.html?id=${encodeURIComponent(pid)}`;
 }
 
 const RECENT_KEY = 'qs_recently_viewed';
@@ -1182,7 +1182,7 @@ function renderRecentStrip(){
   if(!items.length){ wrap.style.display='none'; return; }
   wrap.style.display='block';
   document.getElementById('recentRow').innerHTML = items.map(miniCard).join('');
-  document.getElementById('recentRow').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>openSheet(el.dataset.id));
+  document.getElementById('recentRow').querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>window.location.href=`produit.html?id=${encodeURIComponent(el.dataset.id)}`);
 }
 function renderCrossSell(p){
   const zone = document.getElementById('crossSellZone');
@@ -1209,7 +1209,7 @@ function renderCrossSell(p){
           </div>`).join('')}
       </div>
     </div>`;
-  zone.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>openSheet(el.dataset.id));
+  zone.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>window.location.href=`produit.html?id=${encodeURIComponent(el.dataset.id)}`);
 }
 
 let CURRENT_PRODUCT = null;
