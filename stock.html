@@ -160,32 +160,17 @@ input,select,textarea{font-family:inherit;}
 </head>
 <body>
 
-<div id="loginScreen">
-  <div class="login-card">
-        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 16px;">
-      <svg width="56" height="56" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="64" height="64" rx="16" fill="#1F4B4C"/>
-        <path d="M12 16h5l5.6 20h20.8l4-14H21" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <circle cx="26" cy="43" r="2.4" fill="#fff"/>
-        <circle cx="40" cy="43" r="2.4" fill="#fff"/>
-        <path d="M36 10l-10 16h8l-4 14 14-18H35z" fill="#E08A3C"/>
-      </svg>
-      <div style="text-align:left;line-height:1.1;">
-        <div style="font-family:'Tajawal',sans-serif;font-size:28px;font-weight:900;color:#1F4B4C;letter-spacing:-0.5px;">Quick<span style="color:#E08A3C;">Shop</span></div>
-      </div>
+<div id="loginScreen" style="position:fixed;inset:0;background:var(--bg,#F7FAF9);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#fff;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,0.12);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <img src="Stock.jpg" alt="QuickShop" style="height:60px;border-radius:10px;margin:0 auto 12px;">
+      <h2 style="font-size:20px;font-weight:800;color:#1F4B4C;">QuickShop</h2>
+      <p style="font-size:13px;color:#6C7278;margin-top:4px;">Gestion du Stock</p>
     </div>
-    <div style="font-size:13px;font-weight:700;color:#1F4B4C;margin-bottom:2px;">QuickShop — Gestion</div>
-    <div class="login-sub">Dépôt & Stock — Accès employé</div>
-    <div class="login-field">
-      <label>Agent</label>
-      <select id="loginAgentSelect"><option value="">Chargement...</option></select>
-    </div>
-    <div class="login-field">
-      <label>Mot de passe</label>
-      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="login-btn-el" onclick="doLogin()">🔐 Connexion</button>
-    <div id="loginError">❌ Mot de passe incorrect</div>
+    <input id="loginEmail" type="email" placeholder="Email" style="width:100%;padding:12px 16px;border:1.5px solid #E3E0D8;border-radius:10px;font-size:14px;margin-bottom:12px;outline:none;font-family:inherit;">
+    <input id="loginPassword" type="password" placeholder="Mot de passe" style="width:100%;padding:12px 16px;border:1.5px solid #E3E0D8;border-radius:10px;font-size:14px;margin-bottom:16px;outline:none;font-family:inherit;">
+    <button onclick="doLogin()" style="width:100%;padding:13px;background:#1F4B4C;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">Se connecter</button>
+    <p id="loginError" style="color:#D6432F;font-size:13px;margin-top:12px;text-align:center;display:block;"></p>
   </div>
 </div>
 
@@ -690,7 +675,7 @@ input,select,textarea{font-family:inherit;}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://txlcppqnpoqnyjskevbh.supabase.co";
-const SUPABASE_KEY = "sb_publishable_KuJ5n4MUqbIPEs-JSXNKhg_lhkDGbyN";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4bGNwcHFucG9xbnlqc2tldmJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MDQzNTgsImV4cCI6MjEwMzE4MDM1OH0.pFCdNJXkUI981atVJJqavXo4EcMZu9XMOVAL-mkZ58Q";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function showToast(msg){
@@ -734,46 +719,60 @@ function inDateRange(ms, fromStr, toStr){
 let stockDateFiltersInit = false;
 let caisseDateFilterInit = false;
 
-/* ============ LOGIN ============ */
-const LOGIN_KEY = 'qs_stock_auth';
+/* ============ AUTH ============ */
+const ALLOWED_ROLES = ['admin', 'stock'];
 let CURRENT_AGENT = null;
 
-async function hashPassword(password){
-  const data = new TextEncoder().encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-async function loadAgentsForLogin(){
-  const {data,error} = await sb.from('stock_agents').select('*').eq('active', true).order('name',{ascending:true});
-  const sel = document.getElementById('loginAgentSelect');
-  if(error || !data || !data.length){
-    sel.innerHTML = '<option value="">Aucun agent — contacter l\'admin</option>';
-    return;
-  }
-  sel.innerHTML = data.map(a=>`<option value="${a.id}" data-hash="${a.password_hash}" data-name="${a.name}" data-admin="${a.is_admin}">${a.name}</option>`).join('');
+function showLogin(){
+  document.getElementById('loginScreen').style.display = 'flex';
 }
 
 async function doLogin(){
-  const sel = document.getElementById('loginAgentSelect');
-  const opt = sel.options[sel.selectedIndex];
-  const pass = document.getElementById('loginPass').value || '';
-  if(!opt || !opt.value){ showToast('Choisis un agent'); return; }
-  const hash = await hashPassword(pass);
-  if(hash === opt.dataset.hash){
-    CURRENT_AGENT = { id:opt.value, name:opt.dataset.name, is_admin: opt.dataset.admin === 'true' };
-    sessionStorage.setItem(LOGIN_KEY, JSON.stringify(CURRENT_AGENT));
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('loginError').style.display = 'none';
-    startApp();
-  } else {
-    document.getElementById('loginError').style.display = 'block';
-    document.getElementById('loginPass').value = '';
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { errEl.textContent = 'Email ou mot de passe incorrect'; return; }
+
+  const { data: roleData } = await sb.from('user_roles').select('role').eq('id', data.user.id).single();
+  const role = roleData?.role;
+
+  if (!ALLOWED_ROLES.includes(role)) {
+    await sb.auth.signOut();
+    errEl.textContent = 'Accès non autorisé pour ce panel';
+    return;
   }
+
+  const isAdmin = role === 'admin';
+  CURRENT_AGENT = { id: data.user.id, name: data.user.email, is_admin: isAdmin };
+  document.getElementById('loginScreen').style.display = 'none';
+  startApp();
 }
-function doLogout(){
-  sessionStorage.removeItem(LOGIN_KEY);
-  location.reload();
+
+async function checkAuth(){
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showLogin(); return; }
+
+  const { data: roleData } = await sb.from('user_roles').select('role').eq('id', session.user.id).single();
+  const role = roleData?.role;
+  if (!ALLOWED_ROLES.includes(role)) {
+    await sb.auth.signOut();
+    showLogin();
+    return;
+  }
+
+  const isAdmin = role === 'admin';
+  CURRENT_AGENT = { id: session.user.id, name: session.user.email, is_admin: isAdmin };
+  document.getElementById('loginScreen').style.display = 'none';
+  startApp();
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  CURRENT_AGENT = null;
+  showLogin();
 }
 
 /* ============ NAV ============ */
@@ -2299,13 +2298,7 @@ async function startApp(){
 }
 
 (async function init(){
-  await loadAgentsForLogin();
-  const saved = sessionStorage.getItem(LOGIN_KEY);
-  if(saved){
-    CURRENT_AGENT = JSON.parse(saved);
-    document.getElementById('loginScreen').style.display = 'none';
-    await startApp();
-  }
+  await checkAuth();
 })();
 </script>
 </body>
