@@ -1070,7 +1070,8 @@ function rowToOrder(r){
 orderItems: Array.isArray(r.order_items) ? r.order_items : null,
     variant: r.variant || null,
     postponedUntil: r.postponed_until ? Number(r.postponed_until) : null,
-    note: r.note || null
+    note: r.notes || r.note || null,   /* produit.html writes 'notes', confirmateur writes 'note' — read both */
+    purchasePriceSnapshot: r.purchase_price_snapshot != null ? Number(r.purchase_price_snapshot) : null
   };
 }
 
@@ -1238,7 +1239,8 @@ async function syncOrdersIncremental(){
   const myToken = ++ordersFetchToken;
   const since = lastOrdersSyncAt;
   const now = Date.now();
-  const {data,error} = await sb.from('orders').select('*').gt('updated_at',since).order('created_at',{ascending:false});
+  const sinceISO = since ? new Date(since).toISOString() : new Date(0).toISOString();
+  const {data,error} = await sb.from('orders').select('*').gt('updated_at',sinceISO).order('created_at',{ascending:false});
   if(error){ console.error('syncOrdersIncremental:',error.message); return; }
   if(myToken !== ordersFetchToken) return; // idem : réponse périmée, on l'ignore
   const fresh = (data||[]).map(rowToOrder);
@@ -1250,7 +1252,8 @@ async function syncAbandonedIncremental(){
   const myToken = ++abandonedFetchToken;
   const since = lastAbandonedSyncAt;
   const now = Date.now();
-  const {data,error} = await sb.from('abandoned_carts').select('*').gt('updated_at',since).order('created_at',{ascending:false});
+  const sinceISO = since ? new Date(since).toISOString() : new Date(0).toISOString();
+  const {data,error} = await sb.from('abandoned_carts').select('*').gt('updated_at',sinceISO).order('created_at',{ascending:false});
   if(error){ console.error('syncAbandonedIncremental:',error.message); return; }
   if(myToken !== abandonedFetchToken) return;
   const fresh = (data||[]).map(rowToAband);
@@ -1582,7 +1585,7 @@ async function postponeOrderConf(id, ts){
   const o = (ALL_ORDERS||ORDERS).find(x=>x.id===id);
   if(!o) return;
   const oldStatusPostpone = o.status;
-  const { error } = await sb.from('orders').update({status:'postponed', postponed_until:ts, confirmed_by:CURRENT_USER.name}).eq('id', id);
+  const { error } = await sb.from('orders').update({status:'postponed', postponed_until:ts, confirmed_by:CURRENT_USER.name, updated_at: new Date().toISOString()}).eq('id', id);
   if(error){ showToast('Erreur: '+error.message); return; }
   o.status = 'postponed';
   o.postponedUntil = ts;
@@ -1611,7 +1614,7 @@ async function updateStatus(id, status){
     if(bureauSel) bureauSel.focus();
     return;
   }
-  const updates = {status, confirmed_by:CURRENT_USER.name};
+  const updates = {status, confirmed_by:CURRENT_USER.name, updated_at: new Date().toISOString()};
   if(status==='confirmed') updates.confirmed_at = Date.now();
   if(agency && isStopdesk) updates.stopdesk_agency = agency;
   const {error} = await sb.from('orders').update(updates).eq('id',id);
@@ -3221,7 +3224,7 @@ async function saveOrderNote(){
   const note = document.getElementById('confNoteInput').value.trim();
   const id = _confEditOrderId;
   if(!id) return;
-  const {error} = await sb.from('orders').update({note, updated_at: Date.now()}).eq('id', id);
+  const {error} = await sb.from('orders').update({note, updated_at: new Date().toISOString()}).eq('id', id);
   if(!error){
     const o = (ALL_ORDERS||ORDERS).find(x=>x.id===id);
     if(o) o.note = note;
