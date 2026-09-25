@@ -1624,6 +1624,22 @@ input,select,textarea{font-family:inherit;}
     </div>
   </div>
 
+  <!-- Notifications push -->
+  <div class="app-card">
+    <div class="app-card-head">
+      <div class="app-icon" style="background:#EFF6FF;color:#2563EB;">🔔</div>
+      <div class="app-card-title">
+        <div class="app-name">Notifications push</div>
+        <div class="app-desc">Reçois une alerte même quand l'onglet est en arrière-plan</div>
+      </div>
+    </div>
+    <div class="app-card-body">
+      <div id="pushNotifStatus" style="font-size:12.5px;color:var(--muted);margin-bottom:10px;">Statut : non activé sur cet appareil</div>
+      <button class="btn btn-brand btn-block" id="activerPushBtn" onclick="activerNotificationsAdmin()">🔔 Activer les notifications push</button>
+      <button class="btn btn-outline btn-block" id="desactiverPushBtn" onclick="desactiverNotificationsAdmin()" style="margin-top:8px;display:none;">🔕 Désactiver les notifications</button>
+    </div>
+  </div>
+
   <!-- Sécurité -->
   <div class="app-card">
     <div class="app-card-head">
@@ -1778,6 +1794,8 @@ input,select,textarea{font-family:inherit;}
     <button class="del-subtab active" data-ftab="salaires">💼 Salaires</button>
     <button class="del-subtab" data-ftab="revenus">📈 Revenus</button>
     <button class="del-subtab" data-ftab="stats">📊 Statistiques</button>
+    <button class="del-subtab" data-ftab="caisse">💰 Caisse</button>
+    <button class="del-subtab" data-ftab="fournisseurs-dette">🏭 Dettes fournisseurs</button>
   </div>
 
 
@@ -2119,6 +2137,75 @@ input,select,textarea{font-family:inherit;}
       <div style="font-size:10.5px;color:var(--muted);margin-bottom:10px;">Top 10 wilayas par volume confirmé, avec le produit qui y marche le mieux (minimum 3 commandes).</div>
       <div id="statsWilayaRanking"></div>
     </div>
+  </div>
+
+  <!-- ===== SOUS-VUE CAISSE ===== -->
+  <div class="del-subview" id="finsub-caisse">
+    <div class="section-title" style="margin-bottom:2px;">💰 Caisse</div>
+    <div class="section-sub" style="margin-bottom:14px;">Entrées, sorties et solde — même données que l'onglet Dépôt › Caisse</div>
+
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;" id="finCaisseKpiPresetBtns">
+      <button type="button" class="date-preset-btn active" data-fincaissekpi="all">Tout</button>
+      <button type="button" class="date-preset-btn" data-fincaissekpi="week">Cette semaine</button>
+      <button type="button" class="date-preset-btn" data-fincaissekpi="month">Ce mois</button>
+      <button type="button" class="date-preset-btn" id="finCaisseKpiCalendarToggle" title="Choisir une période">📅</button>
+    </div>
+    <div id="finCaisseKpiDateRange" style="display:none;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <div style="flex:1;min-width:120px;">
+        <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Du</label>
+        <input type="date" id="finCaisseKpiDateFrom" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+      </div>
+      <div style="flex:1;min-width:120px;">
+        <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Au</label>
+        <input type="date" id="finCaisseKpiDateTo" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+      </div>
+    </div>
+    <div id="finCaisseKpiRow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;"></div>
+
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;">➕ Nouveau mouvement</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <div style="flex:1;min-width:110px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Type</label>
+          <select id="finCaisseTypeSelect" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+            <option value="entree">💚 Entrée</option>
+            <option value="sortie">🔴 Sortie</option>
+          </select>
+        </div>
+        <div style="flex:2;min-width:130px;">
+          <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Montant (دج)</label>
+          <input type="number" id="finCaisseAmountInput" min="1" placeholder="0" style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+        </div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:10.5px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;">Motif *</label>
+        <input type="text" id="finCaisseMotifInput" placeholder="Ex: Achat emballages, Vente flash..." style="width:100%;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+      </div>
+      <button type="button" onclick="finCaisseAddMouvement()" class="btn btn-brand" style="width:100%;">Enregistrer</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="finCaisseHistPresetBtns">
+      <button type="button" class="date-preset-btn active" data-fincaissehist="month">Ce mois</button>
+      <button type="button" class="date-preset-btn" data-fincaissehist="lastmonth">Mois dernier</button>
+      <button type="button" class="date-preset-btn" data-fincaissehist="week">7 jours</button>
+      <button type="button" class="date-preset-btn" data-fincaissehist="all">Tout</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <input type="date" id="finCaisseHistDateFrom" style="flex:1;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+      <input type="date" id="finCaisseHistDateTo" style="flex:1;padding:7px 9px;border-radius:8px;border:1.5px solid var(--line);font-size:12.5px;background:var(--bg);">
+    </div>
+    <div id="finCaisseList"></div>
+  </div>
+
+  <!-- ===== SOUS-VUE DETTES FOURNISSEURS ===== -->
+  <div class="del-subview" id="finsub-fournisseurs-dette">
+    <div class="section-title" style="margin-bottom:2px;">🏭 Dettes fournisseurs</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div class="section-sub" style="margin:0;">Solde précédent + marchandise − versement = nouveau solde</div>
+      <button type="button" class="btn btn-outline btn-sm" id="finOpenAddSupplierModalBtn">➕ Fournisseur</button>
+    </div>
+    <div id="finFournisseursKpi" style="margin-bottom:14px;"></div>
+    <div id="finFournisseursList"></div>
   </div>
 </section>
 
@@ -3473,7 +3560,7 @@ postponedUntil: r.postponed_until ? Number(r.postponed_until) : null,
     stopdeskAgency: r.stopdesk_agency || null,
     filledFast: !!r.filled_fast,
     assignedTo: r.assigned_to || null,
-    assignedAt: r.assigned_at ? Number(r.assigned_at) : null,
+    assignedAt: r.assigned_at ? (typeof r.assigned_at==='string' ? new Date(r.assigned_at).getTime() : Number(r.assigned_at)) : null,
     confirmedAt: r.confirmed_at || null,
     confirmedBy: r.confirmed_by||'',
     orderSource: r.order_source || 'organic',
@@ -3483,7 +3570,10 @@ postponedUntil: r.postponed_until ? Number(r.postponed_until) : null,
     orderTitle: r.order_title || null,
     orderItems: Array.isArray(r.order_items) ? r.order_items : null,
     variant: r.variant || null,
-    carrier: r.carrier || 'noest'
+    carrier: r.carrier || 'noest',
+    note: r.notes || r.note || '',   /* produit.html writes 'notes', confirmateur writes 'note' */
+    bundle: r.bundle || null,
+    purchasePriceSnapshot: r.purchase_price_snapshot != null ? Number(r.purchase_price_snapshot) : null
   };
 }
 
@@ -5391,9 +5481,9 @@ async function autoAssignNewOrders(){
         assignTo = ADMIN_ASSIGN;
       } else {
         // Round-robin parmi les actifs
-        const idx = getIdx('order_rr') % active.length;
+        const idx = (await getIdx('order_rr')) % active.length;
         assignTo = active[idx].name;
-        incIdx('order_rr', active.length);
+        await incIdx('order_rr', active.length);
       }
 // Marquer localement avant l'await pour éviter double-assignation
       o.assignedTo = assignTo;
@@ -5427,9 +5517,9 @@ async function autoAssignNewOrders(){
       if(active.length === 0){
         assignTo = ADMIN_ASSIGN;
       } else {
-        const idx = getIdx('aband_rr') % active.length;
+        const idx = (await getIdx('aband_rr')) % active.length;
         assignTo = active[idx].name;
-        incIdx('aband_rr', active.length);
+        await incIdx('aband_rr', active.length);
       }
       c.assignedTo = assignTo;
       c.assignedAt = Date.now();
@@ -5505,7 +5595,7 @@ async function renderOrders(){
 async function postponeOrder(id, ts){
   const o = ORDERS.find(x=>x.id===id);
   if(!o) return;
-  const { error } = await sb.from('orders').update({status:'postponed', postponed_until:ts}).eq('id', id);
+  const { error } = await sb.from('orders').update({status:'postponed', postponed_until:ts, updated_at: new Date().toISOString()}).eq('id', id);
   if(error){ console.error('postponeOrder:', error.message||String(error)); showToast('Erreur de mise à jour'); return; }
   o.status = 'postponed';
   o.postponedUntil = ts;
@@ -5528,7 +5618,7 @@ async function updateOrderStatus(id, status){
     showToast('⚠️ Commande déjà expédiée — statut Noest : '+o.noestStatus); return;
   }
   const oldStatus = o.status;
-  const updates = {status};
+  const updates = {status, updated_at: new Date().toISOString()};
   if(status==='confirmed') updates.confirmed_at = Date.now();
   const { error } = await sb.from('orders').update(updates).eq('id', id);
   if(error){ console.error('updateOrderStatus:', error.message||String(error)); showToast('Erreur de mise à jour'); return; }
@@ -9127,22 +9217,73 @@ const ROLE_BG    = { admin:'#EDE9FE', confirmateur:'#DCE8E6', stock:'#FEF3C7' };
 async function loadUserRoles(){
   const zone = document.getElementById('confirmatorsList');
   if(!zone) return;
-  const { data } = await sb.from('user_roles').select('id, role').order('role');
-  if(!data || !data.length){
-    zone.innerHTML = '<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Aucun utilisateur encore.</div>';
-    return;
-  }
-  zone.innerHTML = data.map(u => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;">
-      <div style="min-width:0;flex:1;">
-        <div style="font-size:12px;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.id}</div>
-        <div style="margin-top:4px;">
-          <span style="font-size:12px;font-weight:700;background:${ROLE_BG[u.role]||'#eee'};color:${ROLE_COLORS[u.role]||'#333'};padding:2px 9px;border-radius:20px;">${ROLE_LABELS[u.role]||u.role}</span>
+  // Load both user_roles (auth UUIDs) and confirmators (email + active)
+  const [{ data: roles }, { data: confs }] = await Promise.all([
+    sb.from('user_roles').select('id, role').order('role'),
+    sb.from('confirmators').select('name, display_name, active').order('active', {ascending:false})
+  ]);
+
+  let html = '';
+
+  // Section 1: Confirmateurs (from confirmators table — has email + active toggle)
+  if(confs && confs.length){
+    html += `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px;">🎧 Confirmateurs</div>`;
+    html += confs.map(c => {
+      const displayName = c.display_name || c.name;
+      const safeName = (c.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;">
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:13px;font-weight:700;">${displayName}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.name}</div>
         </div>
-      </div>
-      <button onclick="deleteUser('${u.id}')" style="flex-shrink:0;margin-left:10px;font-size:11px;color:var(--danger);background:var(--danger-light,#FEE2E2);border:none;border-radius:8px;padding:6px 11px;cursor:pointer;font-weight:600;">Supprimer</button>
-    </div>
-  `).join('');
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <button onclick="toggleConfActive('${safeName}', ${!c.active})"
+            style="font-size:11px;font-weight:700;border:none;border-radius:8px;padding:5px 9px;cursor:pointer;
+                   background:${c.active?'#DCFCE7':'#FEE2E2'};color:${c.active?'#166534':'#991B1B'};">
+            ${c.active?'✅ Actif':'⏸ Inactif'}
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Section 2: Other roles (admin, stock) — shown by UUID since we don't store their email in user_roles
+  const otherRoles = (roles||[]).filter(u=>u.role!=='confirmateur');
+  if(otherRoles.length){
+    html += `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">👥 Autres utilisateurs</div>`;
+    html += otherRoles.map(u => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;">
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:12px;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.id}</div>
+          <div style="margin-top:4px;">
+            <span style="font-size:12px;font-weight:700;background:${ROLE_BG[u.role]||'#eee'};color:${ROLE_COLORS[u.role]||'#333'};padding:2px 9px;border-radius:20px;">${ROLE_LABELS[u.role]||u.role}</span>
+          </div>
+        </div>
+        <button onclick="deleteUser('${u.id}')" style="flex-shrink:0;margin-left:10px;font-size:11px;color:var(--danger);background:var(--danger-light,#FEE2E2);border:none;border-radius:8px;padding:6px 11px;cursor:pointer;font-weight:600;">Supprimer</button>
+      </div>`).join('');
+  }
+
+  if(!html){
+    html = '<div style="font-size:12.5px;color:var(--muted);padding:8px 0;">Aucun utilisateur encore.</div>';
+  }
+  zone.innerHTML = html;
+}
+
+async function toggleConfActive(email, newState){
+  try {
+    const { error } = await sb.from('confirmators').update({ active: newState }).eq('name', email);
+    if(error) throw error;
+    // Reload full confirmators list so round-robin picks up the change
+    await loadConfirmators();
+    showToast(newState ? '✅ Confirmateur activé — il recevra des commandes' : '⏸ Confirmateur désactivé — exclu de l\'assignation');
+    loadUserRoles();
+    renderBulkAssignSelect();
+    renderAbandonedBulkAssignSelect();
+    renderOrdersList();
+  } catch(e){
+    showToast('❌ Erreur : '+e.message);
+  }
 }
 
 async function createUser(){
@@ -9526,6 +9667,8 @@ document.querySelectorAll('#financeSubtabs .del-subtab').forEach(btn=>{
     if(btn.dataset.ftab==='salaires') renderSalaires();
     if(btn.dataset.ftab==='revenus') renderRevenus();
     if(btn.dataset.ftab==='stats') renderStatistiques();
+    if(btn.dataset.ftab==='caisse') renderFinCaisseView();
+    if(btn.dataset.ftab==='fournisseurs-dette') renderFinFournisseursView();
   });
 });
 
@@ -9963,7 +10106,7 @@ function renderSalaires(){
     if(!name || name==='__admin__') return;
     // Si filtre actif, on ignore les autres confirmateurs
     if(confFilter && name !== confFilter) return;
-        if(!confMap[name]) confMap[name]={name,livCmd:0,livPan:0,retCmd:0,retPan:0,allCmd:0,allPan:0,injectCmd:0,injectPan:0,confirmed:0,months:{}};
+        if(!confMap[name]){ const _conf=CONFIRMATORS_LIST.find(x=>x.name===name); confMap[name]={name, displayName:_conf?.display_name||name, livCmd:0,livPan:0,retCmd:0,retPan:0,allCmd:0,allPan:0,injectCmd:0,injectPan:0,confirmed:0,months:{}}; }
     const m = getMonthKey(ts);
     if(!confMap[name].months[m]) confMap[name].months[m]={livCmd:0,livPan:0,retCmd:0,retPan:0};
         if(isCmd){
@@ -10024,9 +10167,9 @@ function renderSalaires(){
     return `
     <div class="sal-conf-card">
       <div class="sal-conf-head" onclick="this.nextElementSibling.classList.toggle('show')">
-        <div class="sal-conf-avatar" style="background:hsl(${hue},55%,42%);">${c.name.charAt(0).toUpperCase()}</div>
+        <div class="sal-conf-avatar" style="background:hsl(${hue},55%,42%);">${(c.displayName||c.name).charAt(0).toUpperCase()}</div>
         <div class="sal-conf-info">
-          <div class="sal-conf-name">${c.name}</div>
+          <div class="sal-conf-name">${c.displayName||c.name}</div>
           <div class="sal-conf-meta">${c.livCmd} cmd + ${c.livPan} paniers livrés · ${retTotal} retour(s)</div>
         </div>
         <div>
@@ -10423,7 +10566,6 @@ async function renderRevenus(){
     if(!prodMap[pid]) prodMap[pid]={
       pid, name:pname, img:pimg,
       qty:0, ca:0, fraisLiv:0, recu:0, achat:0, totalFrais:0,
-      prixAchatUnit: prixAchat,
       achatOk: prixAchat!=null,
       sponsoUSD:0,
       variantBreakdown: {},
@@ -10434,16 +10576,18 @@ async function renderRevenus(){
     prodMap[pid].fraisLiv   += fraisLivShare;
     prodMap[pid].recu       += recuShare;
     prodMap[pid].totalFrais += fraisFixeShare;
-    if(prixAchat!=null) prodMap[pid].achat += prixAchat*qty;
+    if(prixAchat!=null){ prodMap[pid].achat += prixAchat*qty; prodMap[pid].achatOk = true; }
     if(anyPerProd && perProd[pid]) prodMap[pid].sponsoUSD = Number(perProd[pid])||0;
     if(orderId) prodMap[pid].orderIds.add(orderId);
-    // Détail par variante (prix d'achat propre à chaque variante, pour affichage en sous-titre)
+    // Détail par variante — accumule achatTotal pour calcul de moyenne pondérée
     const vKey = variantValue || '__base__';
-    if(!prodMap[pid].variantBreakdown[vKey]) prodMap[pid].variantBreakdown[vKey] = { label: variantValue||null, qty:0, prixAchat };
+    if(!prodMap[pid].variantBreakdown[vKey]) prodMap[pid].variantBreakdown[vKey] = { label: variantValue||null, qty:0, achatTotal:0 };
     prodMap[pid].variantBreakdown[vKey].qty += qty;
+    prodMap[pid].variantBreakdown[vKey].achatTotal += (prixAchat!=null?prixAchat:0)*qty;
   };
-  // Résout le prix d'achat exact (celui de la variante si elle en a un défini, sinon celui du produit)
-  const resolvePrixAchat = (prodObj, variantValue) => {
+  // Résout le prix d'achat : priorité au snapshot historique (capturé à la création), sinon prix actuel du produit/variante
+  const resolvePrixAchat = (prodObj, variantValue, snapshotValue) => {
+    if(snapshotValue != null) return snapshotValue;
     let prixAchat = prodObj?.purchasePrice != null ? prodObj.purchasePrice : null;
     if(variantValue && prodObj?.variants?.length){
       for(const v of prodObj.variants){
@@ -10475,7 +10619,7 @@ async function renderRevenus(){
         const valueShare = lineProductRevenue/itemsSubtotal;
         const qtyShare = qty/orderTotalQty;
         const lineCa = lineProductRevenue + deliveryCharged*valueShare; // CA = produits + livraison, comme pour un seul produit
-        const prixAchat = resolvePrixAchat(prodObj, line.variant);
+        const prixAchat = resolvePrixAchat(prodObj, line.variant, line.purchase_price_snapshot);
         addProdLine(pid, pname, pimg, qty, lineCa, fraisLivColis*valueShare, recu*valueShare, line.variant, fraisFixeTotalParColis*qtyShare, prixAchat, it.id);
       });
       return;
@@ -10486,7 +10630,7 @@ async function renderRevenus(){
     const pimg  = it.productImage||it.product_image||'';
     const qty   = Number(it.qty||1);
     const prodObj = PRODUCTS.find(p=>p.id===pid);
-    const prixAchat = resolvePrixAchat(prodObj, it.variant);
+    const prixAchat = resolvePrixAchat(prodObj, it.variant, it.purchasePriceSnapshot);
     addProdLine(pid, pname, pimg, qty, totalColis, fraisLivColis, recu, it.variant, fraisFixeTotalParColis, prixAchat, it.id);
   });
 
@@ -10518,11 +10662,14 @@ async function renderRevenus(){
     // Bénéfice par produit — frais fixes déjà correctement répartis par colis (pas par pièce) ci-dessus,
     // sponsoring soustrait séparément (jamais mutualisé également sur tous les colis).
     p.benefice   = p.recu - p.achat - p.totalFrais - p.sponsoDZD;
-    p.margePct   = p.ca>0 ? Math.round((p.benefice/p.ca)*100) : 0;
-    // Détail du prix d'achat par variante, pour affichage en sous-titre si le produit en a plusieurs
-    p.variantList = Object.values(p.variantBreakdown).filter(v=>v.label);
-    // Nombre de commandes (colis) distinctes ayant contribué à ce produit — pour vérifier visuellement
-    // la cohérence des frais fixes (plus de colis séparés = plus de frais fixes cumulés, normal).
+    p.margePct   = p.recu>0 ? Math.round((p.benefice/p.recu)*100) : 0;  // % sur montant reçu net (comme NB admin)
+    // Prix d'achat moyen pondéré (moyenne sur tous les colis de la période, même si le coût a changé)
+    p.prixAchatUnit = p.qty>0 ? Math.round(p.achat/p.qty) : null;
+    // Détail par variante avec prix d'achat moyen pondéré par variante
+    p.variantList = Object.values(p.variantBreakdown).filter(v=>v.label).map(v=>({
+      ...v, prixAchat: v.qty>0 ? Math.round(v.achatTotal/v.qty) : null
+    }));
+    // Nombre de commandes (colis) distinctes ayant contribué à ce produit
     p.nbColis = p.orderIds.size;
   });
 
@@ -11129,7 +11276,8 @@ function computeGlobalBenefice(baseOrders, basePaniers, fromMs, toMs, filterProd
     if(prixAchat!=null) prodMap[pid].achat += prixAchat*qty;
     if(anyPerProd && perProd[pid]) prodMap[pid].sponsoUSD = Number(perProd[pid])||0;
   };
-  const resolvePrixAchat = (prodObj, variantValue) => {
+  const resolvePrixAchat = (prodObj, variantValue, snapshotValue) => {
+    if(snapshotValue != null) return snapshotValue;
     let prixAchat = prodObj?.purchasePrice != null ? prodObj.purchasePrice : null;
     if(variantValue && prodObj?.variants?.length){
       for(const v of prodObj.variants){
@@ -11155,7 +11303,7 @@ function computeGlobalBenefice(baseOrders, basePaniers, fromMs, toMs, filterProd
         const valueShare = lineProductRevenue/itemsSubtotal;
         const qtyShare = qty/orderTotalQty;
         const lineCa = lineProductRevenue + deliveryCharged*valueShare;
-        const prixAchat = resolvePrixAchat(prodObj, line.variant);
+        const prixAchat = resolvePrixAchat(prodObj, line.variant, line.purchase_price_snapshot);
         addProdLine(pid, qty, lineCa, recu*valueShare, fraisFixeTotalParColis*qtyShare, prixAchat);
       });
       return;
@@ -11163,7 +11311,7 @@ function computeGlobalBenefice(baseOrders, basePaniers, fromMs, toMs, filterProd
     const pid = it.productId||it.product_id||'';
     const qty = Number(it.qty||1);
     const prodObj = PRODUCTS.find(p=>p.id===pid);
-    const prixAchat = resolvePrixAchat(prodObj, it.variant);
+    const prixAchat = resolvePrixAchat(prodObj, it.variant, it.purchasePriceSnapshot);
     addProdLine(pid, qty, totalColis, recu, fraisFixeTotalParColis, prixAchat);
   });
 
@@ -13781,6 +13929,229 @@ async function refreshAll(){
   STOCK_CAISSE = caisseData; SUPPLIER_LEDGER = ledgerData;
   await autoAssignNewOrders();
 }
+
+/* ============ PUSH NOTIFICATIONS ============ */
+const VAPID_PUBLIC_KEY = 'BGN3hrct6n63g_NgUH7cPZtG2X5PDtv1yjs7QNYOCsjGzekL75Sq3B__GJb4PEFsp3d-HDmObH6zmvrPPCgX1-Q';
+
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for(let i=0; i<rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function activerNotificationsAdmin(){
+  try {
+    if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+      showToast('❌ Push non supporté sur cet appareil');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){
+      document.getElementById('pushNotifStatus').textContent = 'Statut : permission refusée';
+      showToast('❌ Permission refusée');
+      return;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if(!sub){
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    const userEmail = (await sb.auth.getUser().catch(()=>null))?.data?.user?.email || 'admin';
+    const subJson = sub.toJSON();
+    const {error} = await sb.from('push_subscriptions').upsert({
+      endpoint: subJson.endpoint,
+      p256dh: subJson.keys.p256dh,
+      auth: subJson.keys.auth,
+      user_email: userEmail,
+      created_at: new Date().toISOString()
+    }, { onConflict: 'endpoint' });
+    if(error) throw error;
+    localStorage.setItem('qs_push_active','1');
+    document.getElementById('pushNotifStatus').textContent = 'Statut : ✅ Activé sur cet appareil';
+    document.getElementById('activerPushBtn').style.display = 'none';
+    document.getElementById('desactiverPushBtn').style.display = '';
+    showToast('✅ Notifications push activées !');
+  } catch(e){
+    console.error('Push activation error:', e);
+    showToast('❌ Erreur : '+e.message);
+  }
+}
+
+async function desactiverNotificationsAdmin(){
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if(sub){
+      await sb.from('push_subscriptions').delete().eq('endpoint', sub.endpoint);
+      await sub.unsubscribe();
+    }
+    localStorage.removeItem('qs_push_active');
+    document.getElementById('pushNotifStatus').textContent = 'Statut : non activé sur cet appareil';
+    document.getElementById('activerPushBtn').style.display = '';
+    document.getElementById('desactiverPushBtn').style.display = 'none';
+    showToast('🔕 Notifications désactivées');
+  } catch(e){
+    showToast('❌ Erreur : '+e.message);
+  }
+}
+
+async function checkPushStatus(){
+  try {
+    if(!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    const statusEl = document.getElementById('pushNotifStatus');
+    const activerBtn = document.getElementById('activerPushBtn');
+    const desactiverBtn = document.getElementById('desactiverPushBtn');
+    if(!statusEl) return;
+    if(sub && Notification.permission === 'granted'){
+      statusEl.textContent = 'Statut : ✅ Activé sur cet appareil';
+      if(activerBtn) activerBtn.style.display = 'none';
+      if(desactiverBtn) desactiverBtn.style.display = '';
+    } else {
+      statusEl.textContent = Notification.permission === 'denied'
+        ? 'Statut : ❌ Permission bloquée (changer dans les paramètres du navigateur)'
+        : 'Statut : non activé sur cet appareil';
+    }
+  } catch(e){ /* ignore */ }
+}
+// Check push status when apps view is shown
+document.querySelector('[data-view="apps"]')?.addEventListener('click', ()=>{
+  setTimeout(checkPushStatus, 200);
+});
+
+/* ============ FINANCE — CAISSE (vue Finance) ============ */
+function applyPeriodFinCaisseKpi(period){
+  const now = Date.now();
+  let from=null, to=null;
+  if(period==='month'){ from=startOfMonth(0); to=endOfMonth(0); }
+  else if(period==='week'){ from=now-7*864e5; to=now; }
+  document.getElementById('finCaisseKpiDateFrom').value = from ? msToDateStr(from) : '';
+  document.getElementById('finCaisseKpiDateTo').value   = to   ? msToDateStr(to)   : '';
+}
+function applyPeriodFinCaisseHist(period){
+  const now = Date.now();
+  let from=null, to=null;
+  if(period==='month'){ from=startOfMonth(0); to=endOfMonth(0); }
+  else if(period==='lastmonth'){ from=startOfMonth(-1); to=endOfMonth(-1); }
+  else if(period==='week'){ from=now-7*864e5; to=now; }
+  document.getElementById('finCaisseHistDateFrom').value = from ? msToDateStr(from) : '';
+  document.getElementById('finCaisseHistDateTo').value   = to   ? msToDateStr(to)   : '';
+}
+function renderFinCaisseView(){
+  const kpiRow = document.getElementById('finCaisseKpiRow');
+  if(!kpiRow) return;
+  const fromStr = document.getElementById('finCaisseKpiDateFrom')?.value;
+  const toStr   = document.getElementById('finCaisseKpiDateTo')?.value;
+  const { totalEntrees, totalSorties } = computeCaisseTotals(fromStr, toStr);
+  const { solde } = computeCaisseTotals();
+  kpiRow.innerHTML = `
+    <div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">📥 TOTAL ENTRÉES</div><div style="font-size:17px;font-weight:900;color:var(--brand-dark);">${fmt(totalEntrees)} دج</div></div>
+    <div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">📤 TOTAL SORTIES</div><div style="font-size:17px;font-weight:900;color:var(--danger);">${fmt(totalSorties)} دج</div></div>
+    <div class="card" style="grid-column:1/-1;"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">💰 SOLDE THÉORIQUE (CAISSE VIRTUELLE)</div><div style="font-size:22px;font-weight:900;">${fmt(solde)} دج</div></div>
+  `;
+  renderFinCaisseList();
+}
+function renderFinCaisseList(){
+  const el = document.getElementById('finCaisseList');
+  if(!el) return;
+  const fromStr = document.getElementById('finCaisseHistDateFrom')?.value;
+  const toStr   = document.getElementById('finCaisseHistDateTo')?.value;
+  const filtered = STOCK_CAISSE.filter(c=> inDateRange(Number(c.created_at), fromStr, toStr));
+  if(!filtered.length){ el.innerHTML = '<div class="empty-state"><div class="e-icon">💰</div>Aucun mouvement sur cette période</div>'; return; }
+  el.innerHTML = filtered.slice(0,80).map(c=>`
+    <div class="card" style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <div style="font-size:13px;font-weight:700;">${c.type==='entree'?'📥':'📤'} ${c.motif||'(sans motif)'}</div>
+        <div style="font-size:13px;font-weight:800;color:${c.type==='entree'?'var(--brand-dark)':'var(--danger)'};">${c.type==='entree'?'+':'-'}${fmt(c.amount)}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">👤 ${c.created_by||'Admin'} · ${new Date(Number(c.created_at)).toLocaleString('fr-FR')}</div>
+    </div>
+  `).join('');
+}
+async function finCaisseAddMouvement(){
+  const type   = document.getElementById('finCaisseTypeSelect').value;
+  const amount = Number(document.getElementById('finCaisseAmountInput').value||0);
+  const motif  = document.getElementById('finCaisseMotifInput').value.trim();
+  if(!amount || amount<=0){ showToast('Entre un montant'); return; }
+  if(!motif){ showToast('Le motif est obligatoire'); return; }
+  const userEmail = (await sb.auth.getUser().catch(()=>null))?.data?.user?.email || 'Admin';
+  const row = { id:'cai_'+uid(), type, amount, motif, created_by: userEmail, created_at: Date.now() };
+  const {error} = await sb.from('stock_caisse').insert(row);
+  if(error){ showToast('Erreur: '+error.message); return; }
+  STOCK_CAISSE.unshift(row);
+  document.getElementById('finCaisseAmountInput').value='';
+  document.getElementById('finCaisseMotifInput').value='';
+  showToast(`✅ Mouvement enregistré`);
+  renderFinCaisseView();
+}
+// Finance caisse KPI presets
+document.getElementById('finCaisseKpiPresetBtns')?.addEventListener('click', e=>{
+  const calBtn = e.target.closest('#finCaisseKpiCalendarToggle');
+  if(calBtn){
+    const box = document.getElementById('finCaisseKpiDateRange');
+    box.style.display = box.style.display==='none' ? 'flex' : 'none';
+    return;
+  }
+  const btn = e.target.closest('[data-fincaissekpi]');
+  if(!btn) return;
+  document.querySelectorAll('#finCaisseKpiPresetBtns .date-preset-btn[data-fincaissekpi]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyPeriodFinCaisseKpi(btn.dataset.fincaissekpi);
+  renderFinCaisseView();
+});
+['finCaisseKpiDateFrom','finCaisseKpiDateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', renderFinCaisseView);
+});
+// Finance caisse hist presets
+document.getElementById('finCaisseHistPresetBtns')?.addEventListener('click', e=>{
+  const btn = e.target.closest('[data-fincaissehist]');
+  if(!btn) return;
+  document.querySelectorAll('#finCaisseHistPresetBtns .date-preset-btn[data-fincaissehist]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyPeriodFinCaisseHist(btn.dataset.fincaissehist);
+  renderFinCaisseList();
+});
+['finCaisseHistDateFrom','finCaisseHistDateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change', renderFinCaisseList);
+});
+
+/* ============ FINANCE — DETTES FOURNISSEURS (vue Finance) ============ */
+function renderFinFournisseursView(){
+  const kpiEl  = document.getElementById('finFournisseursKpi');
+  const listEl = document.getElementById('finFournisseursList');
+  if(!kpiEl || !listEl) return;
+  const rows = SUPPLIERS.map(s=>({ supplier:s, balance: computeSupplierBalance(s.id) }))
+    .sort((a,b)=> b.balance - a.balance);
+  const totalDette = rows.reduce((sum,r)=> sum + Math.max(r.balance,0), 0);
+  kpiEl.innerHTML = `<div class="card"><div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:4px;">💳 TOTAL DÛ AUX FOURNISSEURS</div><div style="font-size:20px;font-weight:900;color:var(--danger);">${fmt(totalDette)} دج</div></div>`;
+  if(!rows.length){ listEl.innerHTML = '<div class="empty-state"><div class="e-icon">🏭</div>Aucun fournisseur</div>'; return; }
+  listEl.innerHTML = rows.map(({supplier,balance})=>`
+    <div class="card supplier-fin-row" data-id="${supplier.id}" style="margin-bottom:9px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <div>
+        <div style="font-size:13.5px;font-weight:700;">${supplier.name}</div>
+        ${supplier.phone?`<div style="font-size:11px;color:var(--muted);margin-top:2px;">📞 ${supplier.phone}</div>`:''}
+      </div>
+      <div style="font-size:15px;font-weight:900;color:${balance>0?'var(--danger)':(balance<0?'#0369A1':'var(--brand-dark)')};">${fmt(balance)} دج</div>
+    </div>
+  `).join('');
+  listEl.querySelectorAll('.supplier-fin-row').forEach(card=>{
+    card.addEventListener('click', ()=> openSupplierLedger(card.dataset.id));
+  });
+}
+// Finance add supplier button (mirrors the stock one)
+document.getElementById('finOpenAddSupplierModalBtn')?.addEventListener('click', ()=>{
+  document.getElementById('addSupplierName').value='';
+  document.getElementById('addSupplierPhone').value='';
+  document.getElementById('addSupplierSoldeInitial').value='';
+  document.getElementById('addSupplierModal').classList.add('show');
+});
 
 // Init auth
 checkAuth();
