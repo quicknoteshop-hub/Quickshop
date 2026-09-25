@@ -9228,21 +9228,54 @@ async function loadUserRoles(){
   // Section 1: Confirmateurs (from confirmators table — has email + active toggle)
   if(confs && confs.length){
     html += `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0 0 6px;">🎧 Confirmateurs</div>`;
-    html += confs.map(c => {
+    html += confs.map((c,i) => {
       const displayName = c.display_name || c.name;
       const safeName = (c.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const editId = 'confEdit_'+i;
       return `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;">
-        <div style="min-width:0;flex:1;">
-          <div style="font-size:13px;font-weight:700;">${displayName}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.name}</div>
+      <div style="background:#fff;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;">
+          <div style="min-width:0;flex:1;">
+            <div style="font-size:13px;font-weight:700;">${displayName}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.name}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <button onclick="toggleConfActive('${safeName}', ${!c.active})"
+              style="font-size:11px;font-weight:700;border:none;border-radius:8px;padding:5px 9px;cursor:pointer;
+                     background:${c.active?'#DCFCE7':'#FEE2E2'};color:${c.active?'#166534':'#991B1B'};">
+              ${c.active?'✅ Actif':'⏸ Inactif'}
+            </button>
+            <button onclick="document.getElementById('${editId}').style.display=document.getElementById('${editId}').style.display==='none'?'block':'none'"
+              style="font-size:11px;font-weight:700;border:none;border-radius:8px;padding:5px 9px;cursor:pointer;background:#F3F4F6;color:#374151;">
+              ✏️ Modifier
+            </button>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-          <button onclick="toggleConfActive('${safeName}', ${!c.active})"
-            style="font-size:11px;font-weight:700;border:none;border-radius:8px;padding:5px 9px;cursor:pointer;
-                   background:${c.active?'#DCFCE7':'#FEE2E2'};color:${c.active?'#166534':'#991B1B'};">
-            ${c.active?'✅ Actif':'⏸ Inactif'}
-          </button>
+        <div id="${editId}" style="display:none;padding:12px;border-top:1px solid var(--line);background:#FAFAFA;">
+          <div style="display:grid;gap:8px;">
+            <div>
+              <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;">Prénom / Nom affiché</label>
+              <input id="${editId}_name" type="text" placeholder="${displayName}" value="${displayName}"
+                style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;">Nouvel email (optionnel)</label>
+              <input id="${editId}_email" type="email" placeholder="${c.name}"
+                style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:3px;">Nouveau mot de passe (optionnel)</label>
+              <input id="${editId}_pw" type="password" placeholder="Min. 6 caractères"
+                style="width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;">
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button onclick="saveConfEdit('${safeName}','${editId}')"
+                style="font-size:12px;font-weight:700;background:var(--teal);color:#fff;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;">
+                💾 Enregistrer
+              </button>
+              <span id="${editId}_msg" style="font-size:12px;display:none;"></span>
+            </div>
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -9283,6 +9316,55 @@ async function toggleConfActive(email, newState){
     renderOrdersList();
   } catch(e){
     showToast('❌ Erreur : '+e.message);
+  }
+}
+
+async function saveConfEdit(currentEmail, editId){
+  const displayName = document.getElementById(editId+'_name').value.trim();
+  const newEmail    = document.getElementById(editId+'_email').value.trim();
+  const newPassword = document.getElementById(editId+'_pw').value.trim();
+  const msg         = document.getElementById(editId+'_msg');
+
+  if(newPassword && newPassword.length < 6){
+    msg.textContent = '❌ Mot de passe trop court (min. 6)';
+    msg.style.color = 'var(--danger)';
+    msg.style.display = 'block';
+    return;
+  }
+  if(!displayName && !newEmail && !newPassword){
+    msg.textContent = '⚠️ Rien à modifier';
+    msg.style.color = 'var(--warn,#D97706)';
+    msg.style.display = 'block';
+    return;
+  }
+
+  msg.textContent = 'Enregistrement...';
+  msg.style.color = 'var(--muted)';
+  msg.style.display = 'block';
+
+  try {
+    const res = await fetch('/api/update-user', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        email: currentEmail,
+        newEmail: newEmail || undefined,
+        newPassword: newPassword || undefined,
+        displayName: displayName || undefined
+      })
+    });
+    const json = await res.json();
+    if(!res.ok) throw new Error(json.error || 'Erreur serveur');
+
+    msg.textContent = '✅ Modifié avec succès';
+    msg.style.color = 'var(--brand,#1F4B4C)';
+    await loadConfirmators();
+    loadUserRoles();
+    renderBulkAssignSelect();
+    renderAbandonedBulkAssignSelect();
+  } catch(e){
+    msg.textContent = '❌ ' + e.message;
+    msg.style.color = 'var(--danger)';
   }
 }
 
