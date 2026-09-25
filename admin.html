@@ -5524,7 +5524,7 @@ async function autoAssignNewOrders(){
       c.assignedTo = assignTo;
       c.assignedAt = Date.now();
       const {error} = await sb.from('abandoned_carts')
-        .update({assigned_to: assignTo, assigned_at: new Date(c.assignedAt).toISOString()})
+        .update({assigned_to: assignTo, assigned_at: c.assignedAt})
         .eq('id', c.id);
       if(error){ c.assignedTo=null; c.assignedAt=null; console.error('autoAssign aband:', error.message); }
       else logActivity('abandoned_cart', c.id, 'assigned', 'Assignation automatique à la création', null, assignTo);
@@ -6032,7 +6032,7 @@ async function assignAbandoned(id, name, silent=false){
   const c = ABANDONED_CARTS.find(x=>x.id===id);
   const oldAssign = c ? c.assignedTo : null;
   const {error} = await sb.from('abandoned_carts')
-    .update({assigned_to: assignTo, assigned_at: new Date().toISOString()})
+    .update({assigned_to: assignTo, assigned_at: Date.now()})
     .eq('id', id);
   if(error){ console.error('assignAbandoned:', error.message); showToast('Erreur DB: '+error.message); return; }
   if(isAdmin) MANUALLY_UNASSIGNED_ABAND_IDS.add(id);
