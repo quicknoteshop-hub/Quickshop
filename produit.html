@@ -1041,6 +1041,12 @@ async function init(){
   PRODUCT = rowToProduct(prodData);
   renderPage(PRODUCT);
   trackViewContent(PRODUCT); // FIX #3: fire ViewContent after product is rendered
+
+  // Auto-scroll to order form 2.5s after page load
+  setTimeout(()=>{
+    const form = document.getElementById('orderForm');
+    if(form) form.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 2500);
 }
 
 init();
