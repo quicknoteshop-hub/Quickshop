@@ -4648,8 +4648,8 @@ function initDefaultDates(){
   const dtEl = document.getElementById('filterDateTo');
   const now = new Date();
   const from = new Date(now); from.setDate(now.getDate()-29);
-  if(dfEl) dfEl.value = from.toISOString().slice(0,10);
-  if(dtEl) dtEl.value = now.toISOString().slice(0,10);
+  if(dfEl) dfEl.value = localDateStr(from);
+  if(dtEl) dtEl.value = localDateStr(now);
   document.getElementById('filterTimeFrom').value='00:00';
   document.getElementById('filterTimeTo').value='23:59';
   document.querySelectorAll('.date-preset-btn').forEach(b=>b.classList.remove('active'));
@@ -5011,13 +5011,16 @@ document.getElementById('filterTimeFrom')?.addEventListener('change', applyDateF
 document.getElementById('filterTimeTo')?.addEventListener('change', applyDateFilters);
 
 // Boutons preset date
+function localDateStr(d){ // YYYY-MM-DD in local timezone (not UTC)
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 document.querySelectorAll('.date-preset-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.date-preset-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const days = Number(btn.dataset.days);
     const now = new Date();
-    const toStr = now.toISOString().slice(0,10);
+    const toStr = localDateStr(now);
     if(days===0){
       document.getElementById('filterDateFrom').value='';
       document.getElementById('filterDateTo').value='';
@@ -5025,7 +5028,7 @@ document.querySelectorAll('.date-preset-btn').forEach(btn=>{
       document.getElementById('filterTimeTo').value='';
     } else {
       const from = new Date(now); from.setDate(now.getDate()-(days-1));
-      document.getElementById('filterDateFrom').value=from.toISOString().slice(0,10);
+      document.getElementById('filterDateFrom').value=localDateStr(from);
       document.getElementById('filterDateTo').value=toStr;
       document.getElementById('filterTimeFrom').value='00:00';
       document.getElementById('filterTimeTo').value='23:59';
