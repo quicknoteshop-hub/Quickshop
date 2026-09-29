@@ -1160,6 +1160,12 @@ async function loadProducts(){
   openProductFromUrl();
   setupScrollTracking();
   if(PRODUCTS.length) updateOGTags(PRODUCTS[0]);
+  // On load: scroll down so categories + forYou section + top of product grid are all visible
+  setTimeout(()=>{
+    const featured = document.getElementById('featured');
+    if(!featured) return;
+    window.scrollTo({top: featured.offsetTop - 20, behavior:'smooth'});
+  }, 800);
 }
 function renderProductGrid(){
   const grid = document.getElementById('productGrid');
