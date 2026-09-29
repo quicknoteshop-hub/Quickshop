@@ -1086,13 +1086,34 @@ async function loadCategoriesFromProducts(){
   CATEGORIES = Array.from(seen.values());
   renderCatStrip(); renderCatGrid(); renderNav(); renderFooterCats();
 }
-function catIcon(){ return `<svg viewBox="0 0 24 24" stroke-width="1.3"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 10h6M9 14h6"/></svg>`; }
+const CAT_ICONS = {
+  'all':            `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>`,
+  'électroménager': `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h2M7 13h2M15 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/></svg>`,
+  'electroménager': `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h2M7 13h2M15 11a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/></svg>`,
+  'sport':          `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8"/><path d="M5.6 6.4c2 1.6 4.2 2.6 6.4 2.6s4.4-1 6.4-2.6M5.6 17.6c2-1.6 4.2-2.6 6.4-2.6s4.4 1 6.4 2.6M12 4v16"/></svg>`,
+  'bricolage':      `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3-3a6 6 0 0 1-7.5 7.5l-4.2 4.2a2.1 2.1 0 1 1-3-3l4.2-4.2a6 6 0 0 1 7.5-7.5l-3 3z"/></svg>`,
+  'gadgets':        `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/><path d="M9 6h6"/></svg>`,
+  'beauté':         `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2"/></svg>`,
+  'beaute':         `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2"/></svg>`,
+  'maison':         `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10.5z"/><path d="M9 21V12h6v9"/></svg>`,
+  'mode':           `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M6 2l2 6H4L6 2zM18 2l2 6h-4l2-6z"/><path d="M4 8h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/></svg>`,
+  'informatique':   `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+  'cuisine':        `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M3 3v4a4 4 0 0 0 4 4h0a4 4 0 0 0 4-4V3"/><path d="M18 3v18M15 6h6"/></svg>`,
+  'santé':          `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><path d="M12 21C12 21 4 13.5 4 8a8 8 0 0 1 16 0c0 5.5-8 13-8 13z"/><path d="M9 8h6M12 5v6"/></svg>`,
+  'jouets':         `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M7 14V8l5-5 5 5v6"/></svg>`,
+  'default':        `<svg viewBox="0 0 24 24" stroke-width="1.4" fill="none" stroke="currentColor"><rect x="4" y="6" width="16" height="12" rx="3"/><path d="M9 10h6M9 14h6"/></svg>`
+};
+function catIcon(name){
+  if(!name) return CAT_ICONS['default'];
+  const key = name.toLowerCase().trim();
+  return CAT_ICONS[key] || CAT_ICONS['default'];
+}
 
 function renderCatStrip(){
   const strip = document.getElementById('catStrip');
   if(!CATEGORIES.length){ strip.innerHTML=''; return; }
-  strip.innerHTML = `<div class="cat-chip active" data-cat="all"><span class="dot">${catIcon()}</span>الكل</div>` +
-    CATEGORIES.map(c=>`<div class="cat-chip" data-cat="${c.id}"><span class="dot">${catIcon()}</span>${c.name}</div>`).join('');
+  strip.innerHTML = `<div class="cat-chip active" data-cat="all"><span class="dot">${catIcon('all')}</span>الكل</div>` +
+    CATEGORIES.map(c=>`<div class="cat-chip" data-cat="${c.id}"><span class="dot">${catIcon(c.name)}</span>${c.name}</div>`).join('');
   strip.querySelectorAll('[data-cat]').forEach(el=>el.onclick=()=>filterTo(el.dataset.cat));
 }
 function renderCatGrid(){
@@ -1100,7 +1121,7 @@ function renderCatGrid(){
   if(!CATEGORIES.length){ grid.innerHTML = `<div class="empty-note">لا توجد فئات بعد</div>`; return; }
   grid.innerHTML = CATEGORIES.map((c,i)=>`
     <div class="cat-card" data-cat="${c.id}">
-      <div class="art ${TONE_CYCLE[i%2]}"><div class="power-dot"></div>${catIcon()}</div>
+      <div class="art ${TONE_CYCLE[i%2]}"><div class="power-dot"></div>${catIcon(c.name)}</div>
       <h3>${c.name}</h3>
     </div>`).join('');
   grid.querySelectorAll('[data-cat]').forEach(el=>el.onclick=()=>filterTo(el.dataset.cat));
@@ -1139,6 +1160,15 @@ async function loadProducts(){
   openProductFromUrl();
   setupScrollTracking();
   if(PRODUCTS.length) updateOGTags(PRODUCTS[0]);
+  // Scroll hint: peek at forYou + featured sections so user knows more exists
+  setTimeout(()=>{
+    const forYou = document.getElementById('forYouSection');
+    const featured = document.getElementById('featured');
+    const target = (forYou && forYou.offsetParent !== null) ? forYou : featured;
+    if(!target) return;
+    window.scrollTo({top: target.offsetTop - 40, behavior:'smooth'});
+    setTimeout(()=> window.scrollTo({top:0, behavior:'smooth'}), 1200);
+  }, 900);
 }
 function renderProductGrid(){
   const grid = document.getElementById('productGrid');
@@ -1502,6 +1532,11 @@ function scheduleAbandonedSave(){
   clearTimeout(abandonedSaveTimer);
   abandonedSaveTimer = setTimeout(()=>{ saveAbandonedCart(CURRENT_PRODUCT); }, 1500);
 }
+// Save immediately when user hides/closes the page
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'hidden'){ clearTimeout(abandonedSaveTimer); saveAbandonedCart(CURRENT_PRODUCT); }
+});
+window.addEventListener('pagehide', ()=>{ clearTimeout(abandonedSaveTimer); saveAbandonedCart(CURRENT_PRODUCT); });
 async function saveAbandonedCart(p){
   if(!p || orderPlaced) return;
   const name = document.getElementById('fName').value.trim();
