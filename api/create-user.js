@@ -5,7 +5,11 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, password, role } = req.body || {};
+  let body = req.body;
+  if (!body || typeof body === 'string') {
+    try { body = JSON.parse(body || '{}'); } catch(e) { body = {}; }
+  }
+  const { email, password, role } = body;
 
   if (!email || !password || !role) {
     return res.status(400).json({ error: 'email, password et role sont requis' });
