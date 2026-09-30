@@ -13761,7 +13761,7 @@ let dashboardLoaded = false;
 function todayMidnight(){
   const d = new Date();
   d.setHours(0,0,0,0);
-  return d.toISOString();
+  return d.getTime(); // numeric ms timestamp, matches bigint created_at
 }
 
 function fmtTime(ts){
